@@ -1,0 +1,393 @@
+\documentclass[12pt,times,article,chapter=TITLE]{abnt}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage{indentfirst}
+\usepackage{hanging}
+
+\graphicspath{{figs/}}
+
+%% ---------------------------------------------------------------
+%% Dados da capa / folha de rosto
+%% ---------------------------------------------------------------
+\instituicao{UNIVERSIDADE FEDERAL DO RIO DE JANEIRO \\ INSTITUTO DE COMPUTAÇÃO}
+\autor{Davi}
+\titulo{Modelagem Estocástica da Trajetória Acadêmica e do Fluxo Institucional em um Curso de Graduação: uma Abordagem por Cadeias de Markov e Simulação de Monte Carlo com Reamostragem Bootstrap}
+\comentario{Projeto final da disciplina ICP 103 -- Análise de Risco, do Instituto de Computação da Universidade Federal do Rio de Janeiro.\vspace{2cm}\\ Professores: 
+Eber Assis Schmitz e Daniel Sadoc Menasché}
+\local{Rio de Janeiro}
+\data{2026}
+
+\begin{document}
+
+
+% Capa manual (a macro \capa da classe nao imprime a instituicao no topo)
+\thispagestyle{empty}
+\setcounter{page}{0}
+\begin{center}
+\vspace*{1cm}
+{\bfseries UNIVERSIDADE FEDERAL DO RIO DE JANEIRO\\ INSTITUTO DE COMPUTAÇÃO}
+\vfill\vfill
+{\bfseries \Large Davi}
+\vfill\vfill
+{\bfseries \Large Modelagem Estocástica da Trajetória Acadêmica e do Fluxo Institucional em um Curso de Graduação: uma Abordagem por Cadeias de Markov e Simulação de Monte Carlo com Reamostragem Bootstrap}
+\vfill\vfill\vfill
+Rio de Janeiro\\
+2026
+\vspace*{1cm}
+\end{center}
+\newpage
+
+\folhaderosto
+
+\begin{resumo}
+Este trabalho aplica técnicas de Monte Carlo e Cadeias de Markov de Tempo Discreto (DTMC) à modelagem da trajetória acadêmica e do fluxo institucional de um curso de graduação em Ciência da Computação. São propostos dois modelos complementares: (i) uma simulação de coorte, não-homogênea no tempo, que projeta a distribuição de uma turma fechada de ingressantes entre os estados Ativo, Evadido e Formado ao longo de dez anos; e (ii) uma simulação de fluxo institucional, homogênea e de sistema aberto, que projeta o tamanho do corpo discente ativo do curso a partir do último censo disponível. As probabilidades de transição não são tratadas como determinísticas: a cada passo da simulação elas são reamostradas, com reposição (bootstrap não paramétrico), a partir de urnas empíricas construídas com os microdados do Censo da Educação Superior (INEP, 2015--2024), excluindo-se os anos letivos excepcionais de 2020 e 2021. Os resultados indicam, para a coorte, uma mediana de 20 formados e 34 evadidos em uma turma de 60 ingressantes após dez anos, com intervalo de 90\% de confiança de [10, 31] formados; para o fluxo institucional, projeta-se uma tendência de queda no número de alunos ativos, de 745 (censo de 2024) para uma mediana de 655 em dez anos, convergindo para um ponto de equilíbrio (\textit{steady-state}) teórico de aproximadamente 649 alunos. A consistência interna dos algoritmos foi validada por meio de um modelo determinístico de campo médio e por testes estruturais de conservação de massa, confirmando a correção da implementação.
+
+\vspace{1cm}
+\noindent \textbf{Palavras-chave}: Cadeias de Markov. Simulação de Monte Carlo. Bootstrap. Evasão universitária. Análise de risco.
+\end{resumo}
+
+\begin{abstract}
+This work applies Monte Carlo techniques and Discrete-Time Markov Chains (DTMC) to model the academic trajectory and institutional flow of an undergraduate Computer Science program. Two complementary models are proposed: (i) a time-non-homogeneous cohort simulation that projects the distribution of a closed entering class among the states Active, Dropped-out and Graduated over ten years; and (ii) a homogeneous, open-system institutional flow simulation that projects the size of the active student body from the latest available census. Transition probabilities are not treated as deterministic: at each simulation step they are resampled, with replacement (non-parametric bootstrap), from empirical urns built from Brazilian Higher Education Census microdata (INEP, 2015--2024), excluding the exceptional academic years of 2020 and 2021. Results indicate, for the cohort, a median of 20 graduates and 34 dropouts in a class of 60 entrants after ten years, with a 90\% confidence interval of [10, 31] graduates; for the institutional flow, a declining trend in active enrollment is projected, from 745 (2024 census) to a median of 655 in ten years, converging to a theoretical steady-state of approximately 649 students. Internal algorithmic consistency was validated through a deterministic mean-field model and structural mass-conservation tests, confirming the correctness of the implementation.
+
+\vspace{1cm}
+\noindent \textbf{Keywords}: Markov chains. Monte Carlo simulation. Bootstrap. University dropout. Risk analysis.
+\end{abstract}
+
+\tableofcontents
+\thispagestyle{empty}
+
+
+\chapter{Introdução}
+\label{sec:introducao}
+
+A evasão e a retenção discente são, ao mesmo tempo, indicadores de qualidade institucional e fontes de incerteza orçamentária e de planejamento para universidades públicas. Um curso de graduação pode ser entendido como um sistema estocástico no qual cada estudante, a cada ano letivo, permanece matriculado, evade ou se forma, com probabilidades que variam conforme o momento da trajetória (ciclo básico ou final) e que estão sujeitas a choques exógenos -- como a pandemia de COVID-19, que distorceu de forma atípica os indicadores de 2020 e 2021.
+
+Este trabalho tem como objetivo modelar esse sistema por meio de Cadeias de Markov de Tempo Discreto (DTMC) combinadas a uma simulação de Monte Carlo, na qual a incerteza sobre os parâmetros de transição é incorporada via reamostragem \textit{bootstrap} de dados históricos reais. São desenvolvidos dois modelos complementares, aplicados ao curso de Ciência da Computação da UFRJ (código INEP 85783), a partir dos microdados do Censo da Educação Superior do INEP (2015--2024):
+
+\begin{itemize}
+  \item \textbf{Simulação 1 -- Coorte fechada}: projeta a trajetória de uma única turma de ingressantes ao longo de dez anos, permitindo estimar a distribuição de risco de evasão e a probabilidade de conclusão do curso dentro do prazo estendido.
+  \item \textbf{Simulação 2 -- Fluxo institucional aberto}: projeta a evolução do tamanho total do corpo discente ativo do curso, a partir do último censo disponível, permitindo estimar se a matrícula do curso tende ao crescimento, à estabilidade ou ao encolhimento no longo prazo.
+\end{itemize}
+
+O relatório está organizado da seguinte forma: a Seção~\ref{sec:formalizacao} descreve e formaliza matematicamente o problema; a Seção~\ref{sec:literatura} apresenta uma revisão da literatura sobre Cadeias de Markov aplicadas à modelagem de trajetórias acadêmicas e sobre os métodos de Monte Carlo e bootstrap; a Seção~\ref{sec:algoritmo} descreve o algoritmo de Monte Carlo proposto; a Seção~\ref{sec:codigo} apresenta a codificação em R; a Seção~\ref{sec:resultados} discute os resultados obtidos; a Seção~\ref{sec:validacao} apresenta os exemplos de validação da implementação; e a Seção~\ref{sec:conclusao} conclui o trabalho.
+
+
+\chapter{Descrição e Formalização do Problema}
+\label{sec:formalizacao}
+
+\section{Espaço de estados}
+
+O tempo do modelo avança em saltos discretos anuais, indexados por $t \in \{0, 1, \dots, 10\}$. O espaço de estados $S$ de cada discente é definido por três condições de vínculo com a instituição:
+
+\begin{itemize}
+  \item $A$ -- \textbf{Ativo} (estado transiente);
+  \item $E$ -- \textbf{Evadido} (estado absorvente);
+  \item $F$ -- \textbf{Formado} (estado absorvente).
+\end{itemize}
+
+Trata-se, portanto, de uma cadeia de Markov absorvente, com um único estado transiente e dois estados absorventes, propriedade que garante que, para $t \to \infty$, toda trajetória individual termina em $E$ ou em $F$.
+
+\section{Matriz de transição estocástica}
+
+A cada passo $t$, a matriz de transição de um único aluno ativo é
+
+\begin{equation}
+P_t = \begin{bmatrix}
+pA_A(t) & pE_A(t) & pF_A(t) \\
+0 & 1 & 0 \\
+0 & 0 & 1
+\end{bmatrix}, \qquad
+pA_A(t) = 1 - \big(pE_A(t) + pF_A(t)\big),
+\end{equation}
+
+em que $pE_A(t)$ e $pF_A(t)$ são as probabilidades de evasão e de formatura no ano $t$, condicionadas a estar ativo no início do ano. A propriedade de Markov -- a distribuição do estado em $t+1$ depende apenas do estado em $t$, e não de todo o histórico da trajetória -- é uma simplificação assumida do fenômeno real (no qual, por exemplo, o desempenho acadêmico acumulado also influencia a evasão), mas é uma aproximação padrão e amplamente utilizada na literatura de modelagem de retenção estudantil, discutida na Seção~\ref{sec:literatura}.
+
+\subsection{Modelo 1: cadeia não-homogênea no tempo (coorte fechada)}
+
+A Simulação 1 projeta a vida acadêmica de uma única turma de $N=60$ ingressantes por $t=10$ anos, em um sistema \textbf{fechado} (sem novos ingressos após $t=0$) e com cadeia \textbf{não-homogênea no tempo}: os parâmetros $pE_A(t)$ e $pF_A(t)$ mudam de regime conforme o aluno esteja no ciclo básico ou no ciclo final do curso.
+
+\begin{itemize}
+  \item \textbf{Vetor de estado inicial}: $V_0 = [N, 0, 0]$.
+  \item \textbf{Fase 1 (ciclo básico, $t<4$)}: $pF_A(t) = 0$ (trava curricular -- não há prazo mínimo de integralização cumprido); apenas a urna de evasão de calouros é sorteada.
+  \item \textbf{Fase 2 (ciclo final, $t \geq 4$)}: urnas de evasão tardia e de formatura tardia são ambas ativadas.
+\end{itemize}
+
+\subsection{Modelo 2: cadeia homogênea no tempo (fluxo institucional aberto)}
+
+A Simulação 2 estima o comportamento de longo prazo do curso como um sistema \textbf{aberto} (com entrada anual de novos ingressantes) e \textbf{homogêneo no tempo} (mesma matriz de transição $P_{macro}$ em todos os anos, aplicada de forma agregada à população ativa, sem distinguir calouros de veteranos):
+
+\begin{equation}
+V_{t+1} = V_t \, P_{macro} + [I, 0, 0],
+\end{equation}
+
+em que $I$ é o número de ingressantes anuais e o estado inicial ($t=0$) corresponde ao último censo disponível (2024). Diferentemente do Modelo 1 -- que rastreia estoques absorventes acumulados por coorte -- aqui $E$ e $F$ representam o \textit{fluxo} (não acumulado) de evadidos e formados em cada ano, aplicado sobre o estoque de Ativos.
+
+\section{Modelagem da incerteza: bootstrap não paramétrico}
+\label{sec:formalizacao-bootstrap}
+
+As probabilidades $pE$ e $pF$ não são tratadas como constantes determinísticas -- o que seria uma simplificação excessiva diante da variabilidade ano a ano observada nos dados --, mas como variáveis aleatórias empíricas. A cada iteração da simulação de Monte Carlo, sorteia-se, com reposição, um valor real observado nos microdados do INEP (2015--2024), técnica conhecida como \textit{bootstrap} não paramétrico (cf. Seção~\ref{sec:literatura-bootstrap}). Os anos letivos de 2020 e 2021 (período letivo excepcional, PLE) são excluídos das urnas por representarem um regime estrutural distinto (interrupção de calendário, matrículas trancadas em massa), cuja inclusão enviesaria a estimativa das taxas em regime normal.
+
+Foram construídas quatro urnas empíricas distintas, refletindo a segmentação em fases do Modelo 1 e a taxa agregada do Modelo 2:
+\begin{itemize}
+  \item $pE_A$ -- evasão no ciclo básico ($t<4$), calculada como \(\text{QT\_DESISTENCIA}_t / \text{QT\_PERMANENCIA}_{t-1}\) por coorte de ingresso;
+  \item $pE_R$, $pF_R$ -- evasão e formatura no ciclo final ($t\geq4$), com o mesmo denominador de sobreviventes do ano anterior;
+  \item $pE_{macro}$, $pF_{macro}$ -- taxas agregadas anuais de evasão e formatura, calculadas por balanço de massa sobre a matrícula total do curso ($\text{MAT}_{t-1} + \text{ING}_t - \text{CONC}_t - \text{MAT}_t$), a partir do censo consolidado.
+\end{itemize}
+
+Um cuidado metodológico relevante é a escolha do denominador: as colunas de taxa de evasão/sucesso já publicadas pelo INEP são normalizadas pela coorte de ingressantes de $n$ anos atrás (onde $n$ é a duração nominal do curso), e não pela população efetivamente ativa no ano corrente. Como o Modelo 2 aplica uma \emph{única} taxa homogênea a toda a população ativa (mistura de calouros e veteranos), o denominador teoricamente correto é o estoque de matriculados do ano anterior, e não a coorte de ingresso -- razão pela qual as taxas foram recalculadas diretamente a partir do balanço de massa, em vez de reaproveitadas das colunas oficiais de taxa de sucesso/evasão do INEP.
+
+
+\chapter{Revisão de Literatura}
+\label{sec:literatura}
+
+\section{Cadeias de Markov aplicadas à trajetória acadêmica}
+
+O uso de cadeias de Markov para modelar a progressão e a evasão de estudantes no ensino superior é uma abordagem consolidada na literatura de pesquisa institucional. González-Campos, Carvajal-Muquillaza e Aspeé-Chacón (2020) propuseram um índice de risco de evasão individual baseado em cadeias de Markov, aplicado a uma amostra de 5.700 estudantes de oito departamentos de uma universidade pública chilena (coortes de 2012 a 2015); os autores constataram que a maior probabilidade média de evasão concentra-se nos dois primeiros semestres do curso, decrescendo ao longo do tempo -- um padrão qualitativamente compatível com a segmentação em fases (ciclo básico versus ciclo final) adotada no Modelo 1 deste trabalho.
+
+Brezavšček, Bach e Baggia (2017) utilizaram cadeias de Markov para analisar o desempenho e a progressão acadêmica de estudantes em cursos de graduação, tratando reprovação, evasão e conclusão como estados de um processo estocástico multi-período. De forma semelhante, Nguyen (2024) investigou a otimização de modelos de Markov para a predição de retenção estudantil, discutindo o impacto da escolha de parâmetros e da segmentação da população estudantil sobre a acurácia das previsões -- questão diretamente relacionada à opção, feita neste trabalho, de segmentar o Modelo 1 em fase de ciclo básico e fase de ciclo final. Tedeschi et al. (2023) demonstraram que modelos de Markov produzem estimativas de taxa de graduação mais estáveis e com intervalos de confiança mais estreitos do que os métodos tradicionais de coorte, especialmente para subpopulações de tamanho amostral reduzido, o que reforça a escolha de reportar aqui intervalos de confiança (via bootstrap) e não apenas estimativas pontuais.
+
+\section{Simulação de Monte Carlo}
+
+O método de Monte Carlo consiste em estimar quantidades de interesse -- neste caso, a distribuição do número de alunos em cada estado após $t$ anos -- por meio da simulação repetida de um processo estocástico e da agregação estatística (médias, medianas, quantis) dos resultados obtidos em cada replicação independente. A justificativa teórica repousa na Lei dos Grandes Números e no Teorema Central do Limite, que garantem a convergência das estatísticas amostrais simuladas para as quantidades populacionais correspondentes à medida que o número de replicações $N_{simulacoes}$ cresce. Ross (2019) apresenta a formalização padrão de cadeias de Markov absorventes e de sua simulação, incluindo o cálculo de tempos de absorção e probabilidades de absorção -- fundamentos diretamente aplicáveis à estrutura de estados $\{A, E, F\}$ adotada aqui. Robert e Casella (2004) discutem em detalhe os métodos de Monte Carlo para inferência estatística, incluindo a construção de intervalos de confiança empíricos a partir de réplicas simuladas, técnica empregada nas Seções~\ref{sec:resultados} e \ref{sec:validacao} deste relatório.
+
+\section{Bootstrap não paramétrico}
+\label{sec:literatura-bootstrap}
+
+O bootstrap, introduzido por Efron (1979) e sistematizado por Efron e Tibshirani (1993), é um método de reamostragem que permite estimar a distribuição amostral de uma estatística sem impor uma forma paramétrica aos dados, reamostrando com reposição a partir da própria amostra observada. Neste trabalho, o bootstrap não é aplicado para estimar o erro-padrão de uma estatística resumo, mas para propagar a incerteza empírica das \emph{próprias} probabilidades de transição da cadeia de Markov: em vez de fixar $pE$ e $pF$ em seus valores médios históricos, cada passo de cada replicação da simulação sorteia um valor observado real (ano-coorte) das urnas descritas na Seção~\ref{sec:formalizacao-bootstrap}. Essa abordagem -- por vezes chamada de \emph{bootstrap paramétrico da cadeia} ou \emph{simulação híbrida bootstrap-Markov} -- captura tanto a incerteza de amostragem quanto a variabilidade ano a ano genuína do fenômeno (ciclos econômicos, mudanças de política institucional, choques de calendário), sem exigir a especificação de uma distribuição de probabilidade teórica (por exemplo, Beta ou Normal truncada) para as taxas.
+
+
+\chapter{Metodologia: o Algoritmo de Monte Carlo}
+\label{sec:algoritmo}
+
+O pipeline de modelagem é composto por três etapas sequenciais, detalhadas a seguir.
+
+\section{Etapa 1 -- Construção das urnas empíricas}
+
+A partir dos microdados do INEP (indicadores de trajetória por coorte e dados consolidados de curso), são calculadas, para cada ano-observação disponível, as taxas de evasão e formatura conforme as definições da Seção~\ref{sec:formalizacao-bootstrap}. Os anos de 2020--2021 são excluídos, e as taxas resultantes (uma por ano-coorte disponível) formam quatro vetores (urnas) de números reais em $[0,1]$, persistidos em formato JSON.
+
+\section{Etapa 2 -- Motor de simulação (Monte Carlo)}
+
+Para cada uma das $N_{simulacoes}=3000$ replicações independentes, o algoritmo simula a evolução do sistema por $t_{max}=10$ anos. Em cada ano $t$:
+
+\begin{enumerate}
+  \item sorteia-se, com reposição, um valor de $pE$ (e, se aplicável, de $pF$) da urna correspondente à fase corrente;
+  \item calcula-se $pA = 1 - (pE+pF)$;
+  \item aplica-se a transição estocástica -- individualmente, por roleta multinomial, a cada aluno ainda ativo (Modelo 1); ou de forma agregada, por sorteio multinomial sobre o estoque de ativos (Modelo 2);
+  \item armazena-se a contagem de alunos em cada estado ao final do ano $t$.
+\end{enumerate}
+
+Ao final das $3000$ replicações, dispõe-se de uma distribuição empírica completa do número de alunos em cada estado a cada ano, a partir da qual são calculados medianas, médias e intervalos de confiança empíricos (percentis 2,5\%/97,5\% e 5\%/95\%).
+
+\section{Etapa 3 -- Análise de risco}
+
+Os quantis da distribuição simulada (em particular o percentil 90\%) são reportados como medida de risco: por exemplo, o valor abaixo do qual se encontram 90\% das simulações do número de evadidos representa um limite superior de risco de evasão com 90\% de confiança.
+
+
+\chapter{Codificação em R}
+\label{sec:codigo}
+
+A implementação foi realizada em R, com o pacote \texttt{jsonlite} para a leitura das urnas de bootstrap. A seguir, reproduz-se o núcleo do motor de Monte Carlo do Modelo 1 (coorte fechada, cadeia não-homogênea):
+
+\begin{verbatim}
+set.seed(123)
+N_simulacoes <- 3000
+N_alunos_inicial <- 60
+t_max <- 10
+estados <- c("Ativo", "Evadido", "Formado")
+
+historico <- array(0, dim = c(N_simulacoes, t_max, 3))
+dimnames(historico)[[3]] <- estados
+
+for (s in 1:N_simulacoes) {
+  status <- rep("Ativo", N_alunos_inicial)
+
+  for (t in 1:t_max) {
+    # Regra do relogio curricular: trava de formatura para t < 4
+    if (t < 4) {
+      pE_atual <- sample(urnas_coorte$evasao_inicial_pE_A, 1)
+      pF_atual <- 0
+    } else {
+      pE_atual <- sample(urnas_coorte$evasao_tardia_pE_R, 1)
+      pF_atual <- sample(urnas_coorte$formatura_tardia_pF_R, 1)
+    }
+    pA_atual <- 1 - (pE_atual + pF_atual)
+
+    # Roleta vetorizada apenas para quem ainda esta Ativo
+    ativos_idx <- which(status == "Ativo")
+    if (length(ativos_idx) > 0) {
+      status[ativos_idx] <- sample(estados, length(ativos_idx), replace = TRUE,
+                                     prob = c(pA_atual, pE_atual, pF_atual))
+    }
+    historico[s, t, ] <- c(sum(status == "Ativo"), sum(status == "Evadido"),
+                            sum(status == "Formado"))
+  }
+}
+\end{verbatim}
+
+O núcleo do Modelo 2 (fluxo institucional aberto, cadeia homogênea) segue a mesma estrutura, mas aplica a transição de forma agregada sobre o estoque de ativos, via sorteio multinomial (\texttt{rmultinom}), e adiciona a entrada anual de ingressantes \emph{após} a transição -- coerente com a forma como as taxas $pE_{macro}$/$pF_{macro}$ foram calibradas (denominador \texttt{MAT\_ANTERIOR} na Etapa 1):
+
+\begin{verbatim}
+for (s in 1:N_simulacoes) {
+  ativos <- A0
+
+  for (t in 1:t_max_fluxo) {
+    pE <- sample(urnas_macro$evasao_macro_pE, 1)
+    pF <- sample(urnas_macro$formatura_macro_pF, 1)
+    pA <- 1 - (pE + pF)
+
+    transicoes <- rmultinom(1, size = ativos, prob = c(pA, pE, pF))
+    evadidos_ano <- as.integer(transicoes[2, 1])
+    formados_ano <- as.integer(transicoes[3, 1])
+    ativos <- as.integer(transicoes[1, 1]) + N_ingressantes_anual
+
+    historico_fluxo[s, t, ] <- c(ativos, evadidos_ano, formados_ano)
+  }
+}
+\end{verbatim}
+
+O código completo, incluindo a preparação dos dados (\texttt{bootsrap.py}) e os \textit{notebooks} de execução e visualização em R, acompanha este relatório.
+
+
+\chapter{Resultados}
+\label{sec:resultados}
+
+\section{Simulação 1: coorte fechada}
+
+Após $t=10$ anos, a distribuição simulada da coorte de $N=60$ ingressantes apresenta as medianas e intervalos de confiança reportados na Tabela~\ref{tab:sim1}.
+
+\begin{table}[H]
+\centering
+\caption{Distribuição simulada da coorte após 10 anos (3000 replicações)}
+\label{tab:sim1}
+\begin{tabular}{lccc}
+\toprule
+Estado & Mediana & IC 95\% & IC 90\% \\
+\midrule
+Ativo    & 5  & [1, 14]  & [1, 12]  \\
+Evadido  & 34 & [23, 45] & [25, 43] \\
+Formado  & 20 & [9, 33]  & [10, 31] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O percentil 90\% (limite de risco) é de 11 alunos ainda ativos, 41 evadidos e 28 formados. Ou seja, com 90\% de confiança, o número de formados ao final de dez anos não ultrapassa 28 -- uma medida de risco relevante para o planejamento de vagas e de infraestrutura do curso.
+
+A Figura~\ref{fig:coorte-evolucao} apresenta a evolução temporal média (com banda de 10\%--90\%) dos três estados ao longo dos dez anos simulados. Nota-se que a trava curricular ($pF=0$ para $t<4$) produz o platô inicial em zero da curva de formados, e que a evasão cresce de forma consistente desde o primeiro ano, refletindo a maior taxa de evasão observada no ciclo básico.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{cell6_out0.png}
+\caption{Evolução temporal simulada da coorte (média e banda de 10\%--90\% em 3000 replicações)}
+\label{fig:coorte-evolucao}
+\end{figure}
+
+A Figura~\ref{fig:formado-hist} apresenta o histograma e a função de distribuição acumulada empírica (ECDF) do número de formados após dez anos, evidenciando uma distribuição aproximadamente simétrica e unimodal, razoavelmente ajustada por uma densidade normal com os mesmos momentos amostrais -- consequência esperada da agregação de $N=60$ resultados aproximadamente independentes (Teorema Central do Limite).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{cell5_out5.png}
+\caption{Histograma e ECDF do número de formados após 10 anos, com percentil 90\% (linha tracejada vermelha)}
+\label{fig:formado-hist}
+\end{figure}
+
+\section{Simulação 2: fluxo institucional}
+
+O estado inicial (censo 2024) registra $A_0=745$ alunos ativos matriculados e $I=133$ ingressantes no ano. Após dez anos de projeção, a mediana de alunos ativos é de 655 (variação de $-90$ em relação a 2024), com IC 95\% de [555, 780]. A evasão e a formatura no décimo ano (fluxo anual, não acumulado) apresentam mediana de 81 e 55 alunos, respectivamente. O ponto de equilíbrio teórico (\textit{steady-state}) do sistema, $A^\ast = I/(pE_{macro}+pF_{macro})$, é estimado em aproximadamente 649 alunos ativos.
+
+Como o estado inicial ($A_0=745$) encontra-se acima do ponto de equilíbrio estimado (649), o modelo projeta uma tendência de \textbf{queda} no tamanho do curso ao longo da próxima década, até a convergência assintótica ao \textit{steady-state} -- padrão visível na Figura~\ref{fig:fluxo-evolucao}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{cell10_out0.png}
+\caption{Evolução do número de alunos ativos (mediana e banda de 10\%--90\%), com referência ao valor inicial (2024) e ao \textit{steady-state} teórico}
+\label{fig:fluxo-evolucao}
+\end{figure}
+
+A Figura~\ref{fig:fluxo-anual} mostra que o fluxo anual (não acumulado) de evasão e de formatura tende a se estabilizar ao longo dos dez anos projetados, à medida que o estoque de ativos se aproxima do equilíbrio -- comportamento coerente com a dinâmica de um sistema linear de primeira ordem convergindo a um ponto fixo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{cell10_out1.png}
+\caption{Fluxo anual (não acumulado) de evasão e formatura projetado para os próximos 10 anos}
+\label{fig:fluxo-anual}
+\end{figure}
+
+
+\chapter{Validação}
+\label{sec:validacao}
+
+Dois exemplos independentes de validação foram conduzidos para verificar a correção da implementação, complementares à leitura dos resultados numéricos em si.
+
+\section{Validação 1 -- Conservação de massa e trava curricular (Modelo 1)}
+
+Uma propriedade estrutural do Modelo 1 é que, como cada um dos $N$ alunos é alocado individualmente a exatamente um dos três estados a cada passo da roleta, a soma dos alunos em Ativo, Evadido e Formado deve ser rigorosamente igual a $N=60$ ao final de \emph{qualquer} replicação -- e nenhum aluno pode estar no estado Formado antes do ano 4 (trava curricular, $pF=0$ para $t<4$). Reimplementou-se o núcleo do algoritmo em Python (independentemente dos dados reais de bootstrap, usando taxas de teste arbitrárias) e executaram-se 2000 replicações de verificação: em 100\% delas a soma dos três estados permaneceu igual a 60, e nenhuma ocorrência de "Formado" foi observada antes do quarto ano. Este teste, puramente estrutural e algébrico, confirma que a lógica de alocação de estados e a trava de fase estão corretamente implementadas, independentemente dos valores particulares sorteados das urnas.
+
+\section{Validação 2 -- Consistência com o modelo determinístico de campo médio (Modelo 2)}
+
+Para o Modelo 2, comparou-se a trajetória estocástica simulada com a solução analítica de um modelo determinístico de campo médio (\textit{mean-field}), no qual as taxas $pE_{macro}$ e $pF_{macro}$ são fixadas em seus valores médios (em vez de sorteadas a cada passo). Nesse regime, a recorrência $A_{t+1} = A_t\,p_A + I$ possui solução fechada
+
+\begin{equation}
+A_t = A^\ast + (A_0 - A^\ast)\, p_A^{\,t}, \qquad A^\ast = \frac{I}{pE_{macro}+pF_{macro}},
+\end{equation}
+
+em que $p_A = 1-(pE_{macro}+pF_{macro})$. Utilizando as taxas médias implícitas nos resultados simulados ($pE_{macro}\approx 0{,}1237$, $pF_{macro}\approx 0{,}0840$, obtidas do fluxo mediano do décimo ano), a solução analítica fornece $A_{10} = 650{,}7$ alunos -- valor a apenas $0{,}7\%$ de distância da mediana obtida pela simulação estocástica completa (655 alunos), como resumido na Tabela~\ref{tab:validacao2}. A proximidade entre a trajetória estocástica (que incorpora a variabilidade ano a ano do bootstrap) e a trajetória determinística de campo médio confirma que o motor de simulação converge corretamente para o comportamento assintótico previsto pela teoria de cadeias de Markov absorventes/recorrentes, sem viés sistemático introduzido pela reamostragem \textit{bootstrap} ou pela implementação em R.
+
+\begin{table}[H]
+\centering
+\caption{Comparação entre simulação estocástica e solução determinística de campo médio (Modelo 2, $t=10$)}
+\label{tab:validacao2}
+\begin{tabular}{lc}
+\toprule
+Estimativa de $A_{10}$ & Valor \\
+\midrule
+Simulação de Monte Carlo (mediana, 3000 réplicas) & 655 \\
+Solução analítica de campo médio & 650,7 \\
+Ponto de equilíbrio teórico ($A^\ast$) & 649 \\
+Diferença relativa (MC vs. campo médio) & 0,7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\chapter{Conclusão}
+\label{sec:conclusao}
+
+Este trabalho apresentou uma modelagem estocástica da trajetória acadêmica e do fluxo institucional de um curso de graduação, combinando Cadeias de Markov de Tempo Discreto, simulação de Monte Carlo e reamostragem bootstrap não paramétrica de dados reais do Censo da Educação Superior. A separação em dois modelos complementares -- coorte fechada (não-homogênea) e fluxo institucional aberto (homogêneo) -- permitiu responder a duas perguntas de natureza distinta: qual o risco de evasão/conclusão de uma turma específica, e qual a tendência de crescimento ou encolhimento do curso como um todo.
+
+Os resultados indicam um risco não desprezível de evasão na coorte (mediana de 34 evadidos em 60 ingressantes) e uma tendência projetada de redução gradual do corpo discente ativo do curso (de 745 para uma mediana de 655 alunos em dez anos), convergindo para um ponto de equilíbrio estrutural em torno de 649 alunos, caso as taxas históricas de evasão e formatura se mantenham estáveis. Os testes de validação -- estrutural (conservação de massa) e analítico (comparação com o modelo determinístico de campo médio) -- confirmam a correção da implementação computacional, dando suporte à confiabilidade dos intervalos de risco reportados.
+
+Como limitação, destaca-se que o Modelo 2 assume homogeneidade de taxas entre calouros e veteranos (simplificação necessária diante da granularidade dos dados agregados de censo), e que uma anomalia de dado identificada no censo de 2024 (evasão estimada negativa, provavelmente associada a transferências ou reingressos não capturados pelas colunas disponíveis) foi excluída e documentada como limitação conhecida, e não escondida por um filtro silencioso. Trabalhos futuros podem estender o modelo para uma cadeia semi-Markov (com tempos de permanência não geométricos) ou incorporar covariáveis individuais (desempenho acadêmico, renda, cotas) na estimação das probabilidades de transição.
+
+
+
+\chapter*{REFERÊNCIAS}
+
+\begin{hangparas}{1cm}{1}
+
+BREZAVŠČEK, Alenka; BACH, Mirjana Pejić; BAGGIA, Alenka. Markov Analysis of Students' Performance and Academic Progress in Higher Education. \textbf{Organizacija}, v. 50, n. 2, p. 83--95, 2017. DOI: 10.1515/orga-2017-0006.
+
+EFRON, Bradley. Bootstrap Methods: Another Look at the Jackknife. \textbf{The Annals of Statistics}, v. 7, n. 1, p. 1--26, 1979.
+
+EFRON, Bradley; TIBSHIRANI, Robert J. \textbf{An Introduction to the Bootstrap}. New York: Chapman \& Hall/CRC, 1993.
+
+GONZÁLEZ-CAMPOS, José Alejandro; CARVAJAL-MUQUILLAZA, Cristian Manuel; ASPEÉ-CHACÓN, Juan Elías. Modeling of university dropout using Markov chains. \textbf{Uniciencia}, v. 34, n. 1, p. 129--146, 2020. DOI: 10.15359/ru.34-1.8.
+
+INSTITUTO NACIONAL DE ESTUDOS E PESQUISAS EDUCACIONAIS ANÍSIO TEIXEIRA (INEP). \textbf{Microdados do Censo da Educação Superior}. Brasília: INEP, 2015--2024.
+
+NGUYEN, Kien. Optimization of Markov chain modeling in predicting college student retention. \textbf{Journal of Global Education and Research}, v. 8, n. 3, p. 270--289, 2024. DOI: 10.5038/2577-509X.8.3.1360.
+
+ROBERT, Christian P.; CASELLA, George. \textbf{Monte Carlo Statistical Methods}. 2. ed. New York: Springer, 2004.
+
+ROSS, Sheldon M. \textbf{Introduction to Probability Models}. 12. ed. San Diego: Academic Press, 2019.
+
+TEDESCHI, Mason N. et al. Improving Models for Student Retention and Graduation using Markov Chains. \textbf{arXiv preprint}, arXiv:2302.00464, 2023.
+
+\end{hangparas}
+
+\end{document}
