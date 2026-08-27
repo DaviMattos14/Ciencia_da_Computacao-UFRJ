@@ -339,19 +339,126 @@ $$N = \sum_{n=0}^\infty n \cdot p_n = (1-I)\sum_{n=0}^\infty n I^n = (1-I) \cdot
 $$\boxed{N = \frac{I}{1-I}}$$
 
 12) o que acontece se o tempo de transmissão for determinístico igual a L/R ao invés de exponencial? Como fica a equação de N? E a equação de W?  
+
+Com serviço exponencial (M/M/1), o "tempo residual" esperado do pacote em atendimento é a média completa d_trans (propriedade memoryless). Com serviço **determinístico** (M/D/1), pelo paradoxo da inspeção, o tempo residual esperado é **d_trans/2**.
+
+**Fórmula geral (Pollaczek-Khinchine):**
+
+$$W = \frac{a \cdot E[S^2]}{2(1-I)}$$
+
+- M/M/1: $E[S^2] = 2d_{trans}^2$
+- M/D/1: $E[S^2] = d_{trans}^2$ (variância zero)
+
+**Resultado M/D/1:**
+
+$$W = \frac{I \cdot d_{trans}}{2(1-I)} = \frac{W_{M/M/1}}{2}$$
+
+$$N = a \cdot T = a\left(W + d_{trans}\right) = \frac{I(2-I)}{2(1-I)}$$
+
+**Comparação:**
+
+| **Grandeza** |            **M/M/1**             |              **M/D/1**              |
+| :----------: | :------------------------------: | :---------------------------------: |
+|    **W**     | $\dfrac{I \cdot d_{trans}}{1-I}$ | $\dfrac{I \cdot d_{trans}}{2(1-I)}$ |
+|    **N**     |         $\dfrac{I}{1-I}$         |      $\dfrac{I(2-I)}{2(1-I)}$       |
+
+Serviço determinístico gera **menos fila** que exponencial, para a mesma intensidade de tráfego.
   
 13) o que acontece se a taxa de chegada dobrar e a capacidade de serviço também? Ou seja, a'=2a e R'=2R. Quanto vale N e W depois das modificações? E La/R? Qual muda e qual não muda? Justifique intuitivamente sua resposta.  
-  
+
+Intensidade de tráfego (I = La/R)
+
+$$I' = \frac{L \cdot a'}{R'} = \frac{L \cdot 2a}{2R} = \frac{La}{R} = I$$
+
+**I não muda.** A fração de tempo que o servidor fica ocupado permanece exatamente a mesma.
+
+Como $N = I/(1-I)$ depende **exclusivamente** de I:
+
+$$N' = \frac{I'}{1-I'} = \frac{I}{1-I} = N$$
+
+**N não muda.**
+
+Tempo de espera (W)
+$$d'_{trans} = \frac{L}{R'} = \frac{L}{2R} = \frac{d_{trans}}{2}$$
+
+Como $W = \dfrac{I \cdot d_{trans}}{1-I}$:
+
+$$W' = \frac{I \cdot d'_{trans}}{1-I} = \frac{I \cdot (d_{trans}/2)}{1-I} = \frac{W}{2}$$
+
+**W cai pela metade.**
+
+**I e N não mudam** porque essas duas grandezas são **adimensionais em relação ao tempo**.
+
+I mede uma _proporção_ (fração de capacidade ocupada) e N mede uma _contagem_ (quantos pacotes, em média, estão no sistema). Dobrar simultaneamente a taxa de chegada e a taxa de serviço não altera o "quão cheio" o sistema fica, proporcionalmente.
+    
+**W cai pela metade** porque W é uma grandeza que **depende diretamente do tempo de serviço** (d_trans), cada pacote individual passa metade do tempo para ser atendido (já que R dobrou), então, mesmo com o mesmo número médio de pacotes N na fila à sua frente, o tempo de espera absoluto (em segundos) cai proporcionalmente.
+
 14) P13 do livro 8a edição  
-  
+
+a) N pacotes chegam simultaneamente, link vazio
+
+Como todos chegam **ao mesmo tempo** e o link estava livre, eles precisam ser transmitidos **em sequência** (só um pacote por vez no enlace). Vamos numerar os pacotes de 1 a N, na ordem em que serão transmitidos:
+
+- **Pacote 1:** não espera nada na fila — começa a ser transmitido imediatamente. Atraso de fila = **0**
+- **Pacote 2:** precisa esperar o pacote 1 terminar de ser transmitido. Atraso de fila = **L/R**
+- **Pacote 3:** espera os pacotes 1 e 2. Atraso de fila = **2L/R**
+- ...
+- **Pacote k:** espera os (k−1) pacotes anteriores. Atraso de fila = **(k−1)·L/R**
+- **Pacote N:** espera todos os N−1 anteriores. Atraso de fila = **(N−1)·L/R**
+
+O **atraso médio de fila** é a média aritmética desses N valores:
+
+$$d_{fila,médio} = \frac{1}{N}\sum_{k=1}^{N} (k-1)\cdot\frac{L}{R} = \frac{L}{R} \cdot \frac{1}{N}\sum_{k=0}^{N-1} k = \frac{L}{R}\cdot\frac{1}{N}\cdot\frac{(N-1)N}{2}$$
+
+$$d_{fila,médio} = \frac{(N-1)L}{2R}$$
+
+b) Agora N pacotes chegam a cada LN/R segundos
+
+O atraso médio de fila **não muda** em relação ao item (a):
+
+$$d_{fila,médio} = \frac{(N-1)L}{2R}$$
+
+O sistema está operando exatamente na "borda", a taxa de chegada média (N pacotes a cada NL/R segundos, ou seja, R/L pacotes/segundo) é **igual** à taxa de serviço do link (R/L pacotes/segundo, considerando pacotes de L bits). Isso significa **I = 1** exatamente, mas como as chegadas são perfeitamente sincronizadas em rajadas (sem aleatoriedade), o sistema consegue "zerar" a fila antes de cada nova rajada, evitando o crescimento explosivo com chegadas aleatórias de Poisson.
+
 15)  P14 do livro 8a edição  
-  
+a) Atraso total (fila + transmissão)
+
+$$d_{total} = d_{fila} + d_{trans} = \frac{I \cdot L/R}{1-I} + \frac{L}{R}$$
+
+Colocando **L/R** em evidência:
+
+$$d_{total} = \frac{L}{R}\left(\frac{I}{1-I} + 1\right) = \frac{L}{R}\left(\frac{I + (1-I)}{1-I}\right)$$
+
+$$d_{total} = \frac{L/R}{1-I}$$
+
+o atraso de transmissão sozinho (L/R) é "amplificado" por um fator de $\frac{1}{1-I}$, que cresce rapidamente conforme I se aproxima de 1.
+
+b) 
+![[Pasted image 20260827195451.png]]
+
 16)  P15 do livro 8a edição  
+
+$$I = \frac{a}{\mu} \hspace{1cm}d_{trans} = \frac{1}{\mu}$$
+
+Aplicando a fórmula do atraso total (P14)
+$$d_{total} = \frac{d_{trans}}{1-I}$$
+
+Substituindo os dois termos:
+
+$$d_{total} = \frac{1/\mu}{1 - a/\mu}$$
+
+Multiplicando numerador e denominador por μ para simplificar:
+
+$$d_{total} = \frac{1/\mu}{1 - a/\mu} \cdot \frac{\mu}{\mu} = \frac{1}{\mu - a}$$
+
+$$\boxed{d_{total} = \frac{1}{\mu - a}}$$
+
+O atraso total é simplesmente o inverso da **diferença** entre a capacidade de serviço (μ) e a taxa de chegada (a). 
+
+16) P16 do livro 8a edição -- esse enunciado talvez tenha um problema! caso encontre um problema, aponte o problema e conserte o enunciado, como julgar adequado. depois de propor um novo enunciado, resolva o problema que você mesmo bolou  
   
-17) P16 do livro 8a edição -- esse enunciado talvez tenha um problema! caso encontre um problema, aponte o problema e conserte o enunciado, como julgar adequado. depois de propor um novo enunciado, resolva o problema que você mesmo bolou  
+17) P17 do livro 8a edição  
   
-18) P17 do livro 8a edição  
+18) P22 do livro 8a edição -- perda de pacotes  
   
-19) P22 do livro 8a edição -- perda de pacotes  
-  
-20) melhorar o material em [https://www.overleaf.com/read/wmkckszznbjz#04ba5c](https://www.overleaf.com/read/wmkckszznbjz#04ba5c) possivelmente mexendo direto nos arquivos que estão no overleaf  criando uma cópia do repositório ou então listando sugestões
+19) melhorar o material em [https://www.overleaf.com/read/wmkckszznbjz#04ba5c](https://www.overleaf.com/read/wmkckszznbjz#04ba5c) possivelmente mexendo direto nos arquivos que estão no overleaf  criando uma cópia do repositório ou então listando sugestões
