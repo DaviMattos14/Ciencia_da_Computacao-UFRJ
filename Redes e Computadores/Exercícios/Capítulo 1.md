@@ -208,10 +208,7 @@ $$E(X) = \lambda$$
 
 ## Lei de Little (Little's Law)
 
-
-### O que é a Lei de Little?
-
-Ela estabelece uma relação matemática simples, porém extremamente poderosa, entre três variáveis médias de qualquer sistema em estado estável:
+A lei de little estabelece uma relação matemática simples, porém extremamente poderosa, entre três variáveis médias de qualquer sistema em estado estável:
 
 1. Quantos itens/clientes estão **dentro** do sistema.
 2. Com que **frequência** eles chegam.
@@ -224,14 +221,15 @@ $$L = \lambda \cdot W \quad \text{ou} \quad \bar{N} = \lambda \cdot \bar{T}$$
 * **$L$ ou $\bar{N}$ (Número Médio no Sistema):** Quantidade média de clientes ou itens presentes no sistema ao longo do tempo 
 * **$\lambda$ (Lambda - Taxa Média de Chegada):** Quantidade média de clientes que chegam ao sistema por unidade de tempo 
 * **$W$ ou $\bar{T}$ (Tempo Médio no Sistema):** Tempo médio que cada cliente passa no sistema (incluindo tempo de espera na fila + tempo de atendimento)
-### Exemplo: A Loja de Donuts do Bruno) 
 
+Exemplo: 
 Para demonstrar a utilidade da lei, o vídeo apresenta a história de Bruno, que deseja abrir uma loja de donuts:
 
-* **O que Bruno observou:**
+O que Bruno observou:
 * Em média, há **3 pessoas** dentro da loja ($\bar{N} = 3$) 
 * O tempo médio que cada cliente leva desde a entrada até a saída é de **3 minutos** ($\bar{T} = 3\text{ min}$) 
-* **A dúvida de Bruno:** Qual é a taxa média de chegada de clientes ($\lambda$)? 
+
+Qual é a taxa média de chegada de clientes ($\lambda$)? 
 
 Aplicando a Lei de Little:
 
@@ -259,14 +257,14 @@ O grande diferencial do Resultado de Little é a sua **generalidade**
   
 10) derive, por conta própria, o resultado N = I/(I-I) usando a abordagem apresentada nos slides (é só reescrever com suas palavras)  
  
- $a$ = taxa média de chegada de pacotes (pacotes/segundo)
- $d_{trans} = L/R$ = tempo médio de serviço (tempo de transmissão de um pacote)
- $I = a·L/R$ = intensidade de tráfego (fração de tempo que o servidor está ocupado)
- $N_s$ = número médio de pacotes **no servidor** (só pode ser 0 ou 1, pois o servidor atende um pacote por vez)
- $N_q$ = número médio de pacotes **na fila de espera** (esperando, ainda não sendo atendidos)
- $N = N_q + N_s$ = número médio total de pacotes no sistema (fila + servidor)
- $W$ = tempo médio de espera **na fila** (antes de começar a ser servido)
- $T = W + d_{trans}$ = tempo total médio no sistema (fila + serviço)
+ - $a$ = taxa média de chegada de pacotes (pacotes/segundo)
+ - $d_{trans} = L/R$ = tempo médio de serviço (tempo de transmissão de um pacote)
+- $I = a·L/R$ = intensidade de tráfego (fração de tempo que o servidor está ocupado)
+ - $N_s$ = número médio de pacotes **no servidor** (só pode ser 0 ou 1, pois o servidor atende um pacote por vez)
+- $N_q$ = número médio de pacotes **na fila de espera** (esperando, ainda não sendo atendidos)
+- $N = N_q + N_s$ = número médio total de pacotes no sistema (fila + servidor)
+- $W$ = tempo médio de espera **na fila** (antes de começar a ser servido)
+- $T = W + d_{trans}$ = tempo total médio no sistema (fila + serviço)
 
 A fração de tempo que ele está ocupado é, por definição, a própria intensidade de tráfego I. Então, em média:
 
@@ -455,10 +453,60 @@ $$\boxed{d_{total} = \frac{1}{\mu - a}}$$
 
 O atraso total é simplesmente o inverso da **diferença** entre a capacidade de serviço (μ) e a taxa de chegada (a). 
 
-16) P16 do livro 8a edição -- esse enunciado talvez tenha um problema! caso encontre um problema, aponte o problema e conserte o enunciado, como julgar adequado. depois de propor um novo enunciado, resolva o problema que você mesmo bolou  
-  
-17) P17 do livro 8a edição  
-  
-18) P22 do livro 8a edição -- perda de pacotes  
-  
-19) melhorar o material em [https://www.overleaf.com/read/wmkckszznbjz#04ba5c](https://www.overleaf.com/read/wmkckszznbjz#04ba5c) possivelmente mexendo direto nos arquivos que estão no overleaf  criando uma cópia do repositório ou então listando sugestões
+17) P16 do livro 8a edição -- esse enunciado talvez tenha um problema! caso encontre um problema, aponte o problema e conserte o enunciado, como julgar adequado. depois de propor um novo enunciado, resolva o problema que você mesmo bolou  
+Novo enunciado:
+
+> *Considere um buffer de roteador anterior a um enlace de saída. N = número médio de pacotes no buffer + pacote sendo transmitido = **8 pacotes**. O atraso médio de fila (W) é de **10 ms**. A taxa de transmissão do enlace é μ = **1.000 pacotes/s**. Usando a Lei de Little (N = a·d, onde d é o atraso total = fila + transmissão), qual é a taxa média de chegada a, assumindo que não há perda de pacotes?*
+
+Resolução
+
+**Atraso de transmissão:**
+
+$$d_{trans} = \frac{1}{\mu} = \frac{1}{1000} = 0{,}001 \text{ s} = 1 \text{ ms}$$
+
+**Atraso total (fila + transmissão):**
+
+$$d = W + d_{trans} = 10 \text{ ms} + 1 \text{ ms} = 11 \text{ ms} = 0{,}011 \text{ s}$$
+
+**Aplicando a Lei de Little (N = a·d):**
+
+$$a = \frac{N}{d} = \frac{8}{0{,}011} \approx \boxed{727{,}3 \text{ pacotes/s}}$$
+
+**Verificação:** a ≈ 727,3 pacotes/s é **menor** que μ = 1.000 pacotes/s (I = a/μ ≈ 0,727 < 1) ✓ — a fila é estável, os números fazem sentido físico.
+
+18) P17 do livro 8a edição  
+a) Generalizando a Equação 1.2 para taxas heterogêneas
+
+Equação 1.2 do livro (caso **homogêneo**, onde todos os N nós têm o mesmo $d_{proc}$, $d_{trans}$ e $d_{prop}$):
+
+$$d_{fim-a-fim} = N(d_{proc} + d_{trans} + d_{prop})$$
+
+Agora, cada um dos N enlaces/nós no caminho pode ter seu **próprio** atraso de processamento, transmissão e propagação — ou seja, o nó *i* tem $d_{proc}^{(i)}$, $d_{trans}^{(i)}$ e $d_{prop}^{(i)}$, todos potencialmente diferentes uns dos outros. Nesse caso, não dá mais para "fatorar" um valor único multiplicado por N, é preciso **somar individualmente** a contribuição de cada nó:
+
+$$\boxed{d_{fim-a-fim} = \sum_{i=1}^{N} \left( d_{proc}^{(i)} + d_{trans}^{(i)} + d_{prop}^{(i)} \right)}$$
+b) Adicionando o atraso de fila médio em cada nó
+
+$$\boxed{d_{fim-a-fim} = \sum_{i=1}^{N} \left( d_{proc}^{(i)} + d_{trans}^{(i)} + d_{prop}^{(i)} + d_{queue}^{(i)} \right)}$$
+19) P22 do livro 8a edição -- perda de pacotes  
+Se a probabilidade de **perda** em um enlace é p, a probabilidade do pacote **atravessar com sucesso** esse enlace é:
+
+$$1 - p$$
+Para o pacote chegar com sucesso ao cliente, ele precisa **sobreviver a todos os N enlaces**, um após o outro. Como as perdas são **independentes**, a probabilidade de sucesso em **todos** os N enlaces é o **produto** das probabilidades individuais de sucesso:
+
+$$P_{sucesso} = \underbrace{(1-p) \times (1-p) \times \cdots \times (1-p)}_{N \text{ vezes}}$$
+$$\boxed{P_{sucesso} = (1-p)^N}$$
+
+Agora, pensando em **retransmissões**: sempre que um pacote se perde em algum ponto do caminho, o servidor **retransmite** o pacote inteiro do zero. Cada **tentativa** de envio (do servidor até o cliente, passando pelos N enlaces) é um "experimento" independente, com probabilidade de sucesso $P_{sucesso} = (1-p)^N$ e probabilidade de falha $1 - P_{sucesso}$.
+
+O **número de tentativas até o primeiro sucesso** segue exatamente uma **distribuição geométrica** com parâmetro $P_{sucesso}$. A probabilidade de precisar exatamente de **k tentativas** (ou seja, k−1 falhas seguidas, depois um sucesso) é:
+
+$$P(k \text{ tentativas}) = (1 - P_{sucesso})^{k-1} \cdot P_{sucesso}$$
+
+E o **número médio de tentativas** até o sucesso, propriedade clássica da distribuição geométrica, é o **inverso** da probabilidade de sucesso:
+
+$$\boxed{E[\text{tentativas}] = \frac{1}{P_{sucesso}} = \frac{1}{(1-p)^N}}$$
+- Se **p = 0** (nenhuma perda em nenhum enlace): $P_{sucesso} = 1$, e o número médio de tentativas é **1** — faz sentido, o pacote sempre passa de primeira.
+- Se **p** aumenta, ou se **N** aumenta (mais enlaces = mais "chances" de perda no caminho): $P_{sucesso}$ **diminui**, e o número médio de retransmissões **cresce** — também intuitivo, quanto mais "obstáculos" no caminho, mais provável que alguma retransmissão seja necessária.
+
+
+20) melhorar o material em [https://www.overleaf.com/read/wmkckszznbjz#04ba5c](https://www.overleaf.com/read/wmkckszznbjz#04ba5c) possivelmente mexendo direto nos arquivos que estão no overleaf  criando uma cópia do repositório ou então listando sugestões

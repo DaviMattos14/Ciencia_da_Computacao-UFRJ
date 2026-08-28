@@ -14,10 +14,20 @@
 - Roteador só retransmite um pacote **depois** de recebê-lo por completo
 - $d_{trans} = L/R$; para P pacotes back-to-back em N enlaces: $(N+P-1)\cdot(L/R)$
 - **Cut-through switching:** retransmite assim que lê o cabeçalho — atraso deixa de se multiplicar por N
+### 4. Redes de acesso e meios físicos
 
-### 4. Comutação de circuitos vs. pacotes
+- **Acesso residencial:** DSL, cabo (compartilhado), FTTH, móvel | **Institucional:** Ethernet, Wi-Fi
+- **Meios guiados:** par trançado, coaxial, fibra | **Não guiados:** rádio, satélite
+- **Arquiteturas de aplicação:** cliente-servidor vs. P2P
 
-||Circuitos|Pacotes|
+### 5. Comutação de pacotes
+
+- Multiplexação estatística evita monopolização de enlace
+- **Store-and-forward:** $d_{trans}=L/R$; P pacotes/N enlaces: $(N+P-1)L/R$
+- **Cut-through:** não espera pacote inteiro
+### 6. Comutação de circuitos vs. pacotes
+
+|Circuitos|Pacotes|
 |---|---|---|
 |Recursos|Reservados/dedicados|Compartilhados sob demanda|
 |Taxa garantida|Sim|Não|
@@ -25,7 +35,12 @@
 |Técnicas|FDM / TDM|—|
 |Melhor para|Tráfego constante, sessões longas|Tráfego variável/rajado|
 
-### 5. Os quatro atrasos nodais
+|Circuitos|Pacotes|
+|---|---|---|
+|Recursos|Reservados (FDM/TDM)|Compartilhados|
+|Melhor para|Tráfego constante|Tráfego variável|
+
+### 7. Os quatro atrasos nodais
 
 $$d_{nodal} = d_{proc} + d_{fila} + d_{trans} + d_{prop}$$
 
@@ -35,17 +50,26 @@ $$d_{nodal} = d_{proc} + d_{fila} + d_{trans} + d_{prop}$$
 - **d_prop = m/s:** fixo (distância física + velocidade do sinal, independe de L)
 - **d_empacotamento** (visto no P7/VoIP): tempo para acumular bits suficientes pra formar um pacote
 
-### 6. Intensidade de tráfego (I = La/R) e atraso de fila
+### 8. Atrasos, perda e vazão
+
+- $d_{nodal}=d_{proc}+d_{fila}+d_{trans}+d_{prop}$ (+ $d_{empacot}$ em VoIP)
+- **Único variável:** $d_{fila}$, via $I=La/R$
+- **Teoria de filas:** $N=I/(1-I)$ (M/M/1, via Little ou Markov); M/D/1: $N=\frac{I(2-I)}{2(1-I)}$
+- $d_{total}=\frac{L/R}{1-I}=\frac{1}{\mu-a}$
+- **Vazão:** $\min(R_1,...,R_N)$ | **Packet pair:** revela taxa do gargalo
+- Fim-a-fim geral: $\sum_{i=1}^N(d_{proc}^{(i)}+d_{trans}^{(i)}+d_{prop}^{(i)}+d_{queue}^{(i)})$
+- **Perda:** $(1-p)^N$ sucesso em N enlaces; retransmissões médias $=1/(1-p)^N$ (geométrica)
+### 9. Intensidade de tráfego (I = La/R) e atraso de fila
 
 - **I → 0:** fila quase inexistente | **I = 1:** rajadas causam fila → atraso médio tende ao infinito | **I > 1:** fila cresce sem limite → **perda de pacotes**
 - **Lei de Little / teoria de filas (M/M/1):** $N = I/(1-I)$ — número médio de pacotes no sistema, derivável tanto via Lei de Little quanto via cadeia de Markov (nascimento-morte), com resultado idêntico
 
-### 7. Vazão (throughput)
+### 10. Vazão (throughput)
 
 - Vazão média = F/T; limitada pelo **enlace gargalo**: $\min(R_1,...,R_N)$
 - **Packet pair:** intervalo de chegada de 2 pacotes back-to-back no destino revela a taxa do enlace gargalo (L/Rs)
 
-### 8. Camadas de protocolo (5 camadas do modelo Internet)
+### 11. Camadas de protocolo (5 camadas do modelo Internet)
 
 1. **Aplicação** (HTTP, SMTP, DNS...)
 2. **Transporte** (TCP, UDP) — entre processos
@@ -57,3 +81,10 @@ $$d_{nodal} = d_{proc} + d_{fila} + d_{trans} + d_{prop}$$
 - **Desvantagens:** (1) redundância de funcionalidade entre camadas, (2) ocultação de informação entre camadas
 - **Encapsulamento:** cada camada adiciona seu cabeçalho aos dados de cima (mensagem → segmento → datagrama → quadro); desencapsulamento no destino faz o processo inverso
 - **Dispositivos e camadas:** hosts implementam as 5; roteadores implementam física+enlace+rede; switches implementam só física+enlace
+### 12. Segurança (visão geral)
+
+- Malware (vírus, worms) | DoS/DDoS (vulnerabilidade, banda, conexões) | Packet sniffing | IP spoofing
+
+### 13. Histórico
+
+- 1961-72: ARPANET | 1972-80: TCP/IP | 1980-90: DNS, NSFNET | 1990-2000: Web (HTTP/HTML) | 2000-hoje: banda larga, mobile, cloud
