@@ -50,27 +50,20 @@ $$d_{fim-a-fim} = d_{trans} + d_{prop} = \frac{L}{R} + \frac{m}{s}$$
 	
 	Se d_prop > d_trans, isso significa que a propagação é **mais lenta** que a transmissão — ou seja, o primeiro bit, mesmo tendo saído em t=0, **ainda não teve tempo suficiente para percorrer todo o enlace** até t = d_trans. Portanto: o primeiro bit está **em algum ponto no meio do enlace** (ainda "a caminho", não chegou a B).
 
-	f) Se d_prop < d_trans, onde está o **primeiro bit** em t = d_trans?
-
+f) Se d_prop < d_trans, onde está o **primeiro bit** em t = d_trans?
 	Se d_prop < d_trans, a propagação é **mais rápida** que a transmissão. Isso significa que o primeiro bit **já teve tempo de sobra** para percorrer todo o enlace antes mesmo de A terminar de transmitir o pacote inteiro. Portanto: o primeiro bit **já chegou ao Host B** (está no receptor, esperando o resto do pacote chegar).
 
-	g) Encontrar m tal que d_prop = d_trans
-	
+g) Encontrar m tal que $d_{prop} = d_{trans}$
 	Dados: s = 2,5 × 10⁸ m/s, L = 1500 bytes, R = 10 Mbps
-
 	Primeiro, converter unidades:
 	- L = 1500 bytes × 8 bits/byte = **12.000 bits**
 	- R = 10 Mbps = **10 × 10⁶ bits/s**
-
-	Calculando d_trans:
+	Calculando $d_{trans}$:
 	$$d_{trans} = \frac{L}{R} = \frac{12.000}{10 \times 10^6} = 1,2 \times 10^{-3} \text{ s} = 1,2 \text{ ms}$$
-
-	Queremos d_prop = d_trans, ou seja:
+	Queremos $d_{prop} = d_{trans}$, ou seja:
 	$$\frac{m}{s} = d_{trans} \implies m = s \times d_{trans}$$
-
 	$$m = (2,5 \times 10^8) \times (1,2 \times 10^{-3}) = 3 \times 10^5 \text{ m} = 300 \text{ km}$$
-
-	**Resposta:** m = 300.000 metros (300 km).
+**Resposta:** m = 300.000 metros (300 km).
 
 5) P7 -- exercício interessante por olhar para camada de aplicação VoIP  
 
@@ -109,22 +102,22 @@ $$d_{total} = d_{empacot} + d_{trans} + d_{prop} = 7 + 0{,}0448 + 10 = 17{,}0448
 $$\Delta t = (2L/Rs + d_{prop} + L/Rc + d_{prop}) - (L/Rs + d_{prop} + L/Rc + d_{prop}) = \frac{L}{Rs}$$
 
 Resposta: o intervalo de chegada no destino é exatamente L/Rs
-### b) Agora o link 2 é o gargalo (Rc < Rs)
-
-**É possível o pacote 2 enfileirar na fila de entrada do link 2?**
+	b) Agora o link 2 é o gargalo (Rc < Rs). 
+	
+- É possível o pacote 2 enfileirar na fila de entrada do link 2?
 
 Sim, é possível — e vamos justificar formalmente. Repetindo o raciocínio de chegada ao roteador:
-- Pacote 1 chega completo ao roteador em **L/Rs + d_prop**, e começa a ser transmitido no link 2, terminando em **L/Rs + d_prop + L/Rc**
-- Pacote 2 chega completo ao roteador em **2L/Rs + d_prop**
+1. Pacote 1 chega completo ao roteador em **L/Rs + d_prop**, e começa a ser transmitido no link 2, terminando em **L/Rs + d_prop + L/Rc**
+2. Pacote 2 chega completo ao roteador em **2L/Rs + d_prop**
 
 Como agora **Rc < Rs**, temos que **L/Rc > L/Rs**, o que significa que o pacote 1 **ainda está sendo transmitido** no link 2 quando o pacote 2 já chegou completo ao roteador (basta comparar: o pacote 1 só libera o link 2 em L/Rs + d_prop + L/Rc, que é **depois** de 2L/Rs + d_prop, já que L/Rc > L/Rs). Ou seja: **sim, o pacote 2 fica enfileirado**, esperando o link 2 ficar livre — porque agora o link de saída do roteador (mais lento) não consegue "escoar" os pacotes tão rápido quanto eles chegam pelo link de entrada (mais rápido).
 
-**Qual o T mínimo (intervalo entre envios) para evitar essa fila?**
+- **Qual o T mínimo (intervalo entre envios) para evitar essa fila?**
 
 Agora o servidor não envia mais back-to-back — espera T segundos entre o início do envio do pacote 1 e do pacote 2. Queremos que o pacote 2 **só chegue** completo ao roteador **depois** que o link 2 já estiver livre (ou seja, depois que o pacote 1 tenha terminado de ser transmitido nele).
 
-- Pacote 1 libera o link 2 em: **L/Rs + d_prop + L/Rc**
-- Pacote 2 chega completo ao roteador em: **T + L/Rs + d_prop**
+1. Pacote 1 libera o link 2 em: **L/Rs + d_prop + L/Rc**
+2. Pacote 2 chega completo ao roteador em: **T + L/Rs + d_prop**
 
 Para não haver fila, precisamos que:
 
@@ -136,10 +129,6 @@ $$T \geq \frac{L}{Rc}$$
 
 **Resposta: T deve ser pelo menos L/Rc** — ou seja, o servidor precisa esperar, entre o envio dos dois pacotes, pelo menos o **tempo de transmissão de um pacote no enlace gargalo (mais lento)**. Isso garante que, quando o pacote 2 chegar ao roteador, o link 2 já esteja livre (o pacote 1 já foi totalmente escoado).
 
----
-
-Essa questão amarra muito bem tudo que vimos: store-and-forward, atraso de transmissão, atraso de propagação e enlace gargalo — todos aparecendo juntos numa aplicação prática real (medição de banda). Pode mandar a próxima quando quiser.
-  
 7) Vídeo distribuições -- assista e resuma o vídeo, trazendo perguntas: [https://www.youtube.com/watch?v=C8DxAQT5goE](https://www.youtube.com/watch?v=C8DxAQT5goE)  
 
 ## Distribuição Discreta

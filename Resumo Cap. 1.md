@@ -27,13 +27,13 @@
 - **Cut-through:** não espera pacote inteiro
 ### 6. Comutação de circuitos vs. pacotes
 
-|Circuitos|Pacotes|
-|---|---|---|
-|Recursos|Reservados/dedicados|Compartilhados sob demanda|
-|Taxa garantida|Sim|Não|
-|Ociosidade|Desperdiça recurso|Aproveitada por outros|
-|Técnicas|FDM / TDM|—|
-|Melhor para|Tráfego constante, sessões longas|Tráfego variável/rajado|
+| Circuitos      | Pacotes                           |                            |
+| -------------- | --------------------------------- | -------------------------- |
+| Recursos       | Reservados/dedicados              | Compartilhados sob demanda |
+| Taxa garantida | Sim                               | Não                        |
+| Ociosidade     | Desperdiça recurso                | Aproveitada por outros     |
+| Técnicas       | FDM / TDM                         | —                          |
+| Melhor para    | Tráfego constante, sessões longas | Tráfego variável/rajado    |
 
 |Circuitos|Pacotes|
 |---|---|---|
