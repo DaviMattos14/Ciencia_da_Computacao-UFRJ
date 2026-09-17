@@ -103,3 +103,47 @@ Pelo paradoxo da inspeção: $S_R = S/2$
 $$W_{M/D/1} = \frac{IS}{2(1-I)} = \frac{1}{2}W_{M/M/1}$$
 
 **Interpretação central de toda a Aula 8:** dois sistemas podem ter a **mesma** intensidade de tráfego $I$ e ainda assim ter atrasos médios **diferentes** — o que muda é a **variabilidade** do tempo de serviço (capturada pelo segundo momento $E[S^2]$), não só a média.
+
+## ⚠️ A armadilha do símbolo "L"
+
+Na teoria de filas **clássica** (a que Harchol-Balter segue), a Lei de Little é classicamente escrita como:
+
+$$L = \lambda W$$
+
+...onde **L representa o número médio de clientes/jobs no sistema** (o que aqui chamamos de **N**), e **W representa o tempo médio no sistema** (o que aqui chamamos de **T**).
+
+**Só que no contexto de redes (Kurose), a letra L já está "ocupada"** — ela representa o **tamanho do pacote em bits**! E o **W** também muda de significado: aqui, **W é o tempo de espera na FILA** (não no sistema todo). Essa dupla-inversão de significado é, muito provavelmente, a raiz principal da sua confusão.
+
+## Tabela de tradução completa
+
+|Conceito|Notação Kurose/Professor|Notação típica Harchol-Balter / teoria clássica|
+|---|---|---|
+|Taxa de chegada|$\lambda$|$\lambda$ (igual)|
+|Taxa de serviço|$\mu$|$\mu$ (igual)|
+|Tempo médio de serviço|$S = 1/\mu = L/R$|$E[S]$ ou $E[X]$ (S = variável aleatória de serviço)|
+|**Tamanho do pacote (bits)**|$L$|_(não existe — ela modela o tempo de serviço direto, sem separar "tamanho" de "taxa do enlace")_|
+|**Número médio no sistema**|$N$|$L$ (⚠️ letra diferente!) ou às vezes $E[N]$|
+|Número médio na fila (só espera)|$N_q$|$L_Q$ ou $N_Q$|
+|Número médio no servidor|$N_s$|Raramente isolado — geralmente ela trata só $N$ e $N_Q$|
+|**Tempo médio no sistema completo**|$T$|$W$ (⚠️ letra diferente!) ou $E[T]$|
+|**Tempo médio de espera (só fila)**|$W$|$W_Q$ ou $T_Q$ (⚠️ letra "W" aqui é diferente!)|
+|Intensidade de tráfego / utilização|$I$|$\rho$ (rho) — quase sempre|
+|Tempo residual de serviço|$S_R$|$E[S_e]$ ("excess" / "residual") — mesmo conceito, símbolo varia|
+|Lei de Little (sistema)|$N = \lambda T$|$L = \lambda W$|
+|Lei de Little (fila)|$N_q = \lambda W$|$L_Q = \lambda W_Q$|
+
+## Fórmulas-chave "traduzidas"
+
+**Tempo residual (Pollaczek-Khinchine), mesma fórmula, símbolos diferentes:**
+
+$$\text{Aqui: } S_R = \frac{E[S^2]}{2E[S]} \qquad\qquad \text{Harchol-Balter: } E[S_e] = \frac{E[S^2]}{2E[S]}$$
+
+**Fórmula M/M/1 completa:**
+
+$$\text{Aqui: } N = \frac{I}{1-I}, \quad T = \frac{1}{\mu-\lambda} \qquad\qquad \text{Harchol-Balter: } L = \frac{\rho}{1-\rho}, \quad W = \frac{1}{\mu-\lambda}$$
+
+Repare: a **fórmula matemática é idêntica** — só o **nome da letra** muda ($N \leftrightarrow L$ e $T \leftrightarrow W$).
+
+---
+
+**Dica prática pra você:** sempre que ler algo no livro da Harchol-Balter, faça mentalmente a troca: **L dela → N daqui** (número no sistema) e **W dela → T daqui** (tempo no sistema). E sempre que ver **L** no material do seu professor, lembre que é **tamanho de pacote em bits**, não "número de clientes" — são universos de notação diferentes (redes vs. teoria de filas pura) que infelizmente reaproveitam as mesmas letras para coisas diferentes.
