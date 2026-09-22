@@ -21,7 +21,7 @@
 2. **Etapa TCP Handshake:** Aberta a conexão, consome-se $1 \cdot RTT_0$ para sincronizar os pacotes SYN e SYN/ACK.
 3. **Etapa HTTP Request/Response:** O envio da requisição GET e a recepção do texto HTML consomem mais $1 \cdot RTT_0$ (desprezando o tempo de transmissão físico por ser muito pequeno).
 $$\text{Tempo Total} = \left( \sum_{i=1}^{n} RTT_i \right) + 2 \cdot RTT_0$$
-##### P8 -- web browser   
+#### P8 -- web browser   
 ##### a) HTTP Não Persistente sem Conexões TCP Paralelas
 - Cada objeto exige $1\text{ RTT}_0$ para abrir o TCP e $1\text{ RTT}_0$ para buscar o arquivo.
 - Para o arquivo base + $8$ objetos ($9$ objetos no total):
@@ -36,7 +36,7 @@ $$T = RTT_{\text{DNS}} + 2 \cdot RTT_0 + 2 \cdot RTT_0 + 2 \cdot RTT_0 = RTT_{\t
 - Conexão aberta no HTML base ($2 \cdot RTT_0$).
 - Os $8$ objetos são pedidos juntos numa única rajada e respondidos consecutivamente ($1 \cdot RTT_0$).
 $$T = RTT_{\text{DNS}} + 2 \cdot RTT_0 + 1 \cdot RTT_0 = RTT_{\text{DNS}} + 3 \cdot RTT_0$$
-##### P9 -- caching -- interessante!   
+#### P9 -- caching -- interessante!   
 ##### a) Sem Cache Instalação
 1. **Taxa de Chegada de Tráfego ($\beta$):**
     $$\beta = 16\text{ req/s} \times 1\text{ Mbit} = 16\text{ Mbps}$$
@@ -52,7 +52,7 @@ $$I_{\text{novo}} = \frac{9{,}6\text{ Mbps}}{15\text{ Mbps}} = 0{,}64$$
 4. **Calculando $d_{\text{acesso}}$:**
     $$d_{\text{acesso}} = \frac{0{,}0667}{1 - 0{,}64} = \frac{0{,}0667}{0{,}36} \approx 0{,}185\text{ s}$$
 5. **Calculando o Tempo Médio de Resposta Total ($T_{\text{médio}}$):** (Considerando $d_{\text{LAN}} \approx 0\text{ s}$)   $$T_{\text{médio}} = 0{,}4 \cdot (0) + 0{,}6 \cdot (0{,}185 + 3) = 0{,}6 \cdot (3{,}185) \approx 1{,}911\text{ segundos}$$
-##### P10 -- HTTP persistente x não persistente   
+#### P10 -- HTTP persistente x não persistente   
 
 ##### **Cenário:**
 
@@ -69,7 +69,7 @@ $$I_{\text{novo}} = \frac{9{,}6\text{ Mbps}}{15\text{ Mbps}} = 0{,}64$$
 - **Desempenho:** O HTTP persistente evita $10$ handshakes TCP e economiza pacotes de controle extras no enlace de baixa largura de banda.
 - **Ganhos:** **Sim, os ganhos são significativos**, eliminando a latência de controle e a divisão desnecessária de banda em conexões paralelas concorrentes.
 
-##### P13 -- calcule também o tempo médio para a transmissão de objetos em cada caso -- qual o tempo médio de transmissão de objetos no item a)? qual o tempo médio de transmissão de objetos no item b)? explique porque o tempo médio depende da ordem de serviço
+#### P13 -- calcule também o tempo médio para a transmissão de objetos em cada caso -- qual o tempo médio de transmissão de objetos no item a)? qual o tempo médio de transmissão de objetos no item b)? explique porque o tempo médio depende da ordem de serviço
 
 - **Vídeo:** 2.000 quadros
 - **5 imagens:** 3 quadros cada = 15 quadros no total
@@ -121,7 +121,7 @@ $$\text{Tempo médio} = \frac{2000+2003+2006+2009+2012+2015}{6} = \frac{12045}{6
 
 $$\text{Tempo médio} = \frac{14+15+16+17+18+2015}{6} = \frac{2095}{6} \approx \boxed{349{,}17 \text{ tempos de quadro}}$$
 
-### e) Por que o tempo médio depende da ordem de serviço
+e) Por que o tempo médio depende da ordem de serviço
 
 O **makespan** (tempo até _tudo_ terminar) é **idêntico** nos dois casos — 2.015 tempos de quadro, já que o total de trabalho (quadros) enviado é o mesmo, não importa a ordem. Mas o **tempo médio de transmissão dos objetos individuais** despenca de ~2.007 para ~349 com o interleaving.
 
@@ -129,9 +129,30 @@ Isso acontece porque, sem interleaving, **todas as 5 imagens pequenas ficam "pre
 
 Isso é exatamente o mesmo princípio de **escalonamento "menor trabalho primeiro" (Shortest Job First)** que minimiza o **tempo médio de espera** em filas — mesmo que o tempo total do sistema não mude, atender primeiro os itens pequenos reduz drasticamente a **média**, porque poucos itens (o vídeo) "puxam" a média pra cima quando são atendidos por último, ao invés de "travarem" todos os outros itens atrás deles.
 
-##### P23 -- esse é muito importante -- fala sobre escalonamento p2p   
-  
-##### P24 -- também interessante sobre p2p  
+#### P23 -- esse é muito importante -- fala sobre escalonamento p2p   
+
+a) Se $u_s/N \leq d_{min}$
+
+ Para $t = NF/u_s$. Isso vale quando o **servidor é o gargalo**, ou seja, mesmo dividindo a capacidade do servidor igualmente entre os N peers ($u_s/N$ para cada um), essa fatia ainda é **menor ou igual** à capacidade de download de qualquer peer ($d_{min}$). Nesse caso, os peers **nunca** ficam esperando por falta de capacidade de download, o gargalo é inteiramente do lado do servidor.
+
+**Esquema:** o servidor envia o arquivo sequencialmente (ou dividido) a cada peer, usando toda sua capacidade $u_s$ dividida entre os N. O tempo total é $NF/u_s$.
+
+b) Se $u_s/N \geq d_{min}$
+
+Aqui a situação se inverte: o servidor **tem capacidade de sobra**, dividindo $u_s$ entre os N peers, cada fatia ($u_s/N$) seria **maior** do que a capacidade de download do peer mais lento ($d_{min}$). Nesse caso, o **gargalo passa a ser o peer mais lento**, não mais o servidor.
+
+**Esquema:** o servidor pode enviar para cada peer na **taxa máxima que aquele peer consegue receber**. O peer mais lento, com capacidade $d_{min}$, vai levar:
+
+$$t = \frac{F}{d_{min}}$$
+c) Conclusão — fórmula geral
+
+Combinando os dois casos, o tempo mínimo de distribuição, na arquitetura cliente-servidor, é:
+
+$$\boxed{t_{cliente-servidor} \geq \max\left(\frac{NF}{u_s}, \frac{F}{d_{min}}\right)}$$
+
+O sistema é sempre limitado pelo **maior** dos dois "gargalos possíveis". Nenhum esquema de distribuição consegue ser mais rápido que esse limite.
+
+#### P24 -- também interessante sobre p2p  
   
 Site que usa cookies:  
   
