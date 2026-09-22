@@ -1,3 +1,4 @@
+> 		**Nome**: Davi dos Santos Mattos              **DRE**: 119133049
 ##### P4 -- HTTP GET - parsing humano   
 
 - **a) Qual é o URL do documento requisitado pelo navegador?**
@@ -201,3 +202,43 @@ Escolha um site que você goste e tente descobrir como que ele usa cookies -- pa
 
 Site: https://ge.globo.com/futebol/times/fluminense/
 
+- Categoria 1 — Google Analytics / Google Ads (terceiros)
+`_ga`, `_ga_3EWSSPPX...`, `_ga_5401XJ0K8J`, `_ga_K886Y0T4C5`, `_ga_NWTRTWY...`, `_ga_P4F3TC8HVE`, `_ga_SL5WEXQ2...`, `_ga_WLHSK1RZ...`, `_ga_YEWKNJM...`, `_gcl_au`
+Esse é, de longe, o grupo mais numeroso. O padrão `_ga_XXXXXXXXXX` (com um código diferente em cada um) é característico do **Google Analytics 4** — cada `_ga_<ID>` corresponde a uma **propriedade de medição específica** dentro do Analytics. O fato de existirem **oito** cookies `_ga_*` diferentes sugere que a Globo mede esse site em **múltiplas propriedades/contas** do Analytics simultaneamente (possivelmente uma pra audiência geral, outra pra publicidade, outra pra um produto específico, etc.). Já o `_gcl_au` é do **Google Ads** — usado para medir conversões de anúncios.
+
+- Categoria 2 — Anti-bot / anti-fraude (terceiro!) — conecta com nossa tentativa de fetch
+
+`datadome`
+
+**Datadome** é um serviço de terceiro especializado em **detectar e bloquear bots/scrapers** — ele analisa padrões de comportamento (velocidade de cliques, user-agent, etc.) pra diferenciar humanos de programas automatizados. 
+
+- Categoria 3 — Identidade/login unificado da Globo (primeiro nível — grupo Globo)
+
+`GBID`, `GLOBO_ID`, `glb_uid`, `glb_uid_jwt`, `gpixel_uid`, `hsid`, `compass_uid`
+
+Esses cookies **não são de terceiros** no sentido estrito (são da própria Globo), mas repare que vários têm domínio começando com `.gl...` (provavelmente `.globo.com`, não `.ge.globo.com`) — ou seja, são cookies configurados para o **domínio "pai"**, compartilhados entre **todos os sites do grupo Globo** (g1, ge, gshow, globoplay, etc.). É assim que, se você estiver logado em um site da Globo, os outros "já sabem quem você é" sem precisar logar de novo — um sistema de **identidade unificada**. O `glb_uid_jwt` guarda um **JWT** (JSON Web Token — um formato de token de autenticação assinado digitalmente).
+
+- Categoria 4 — Tag Management (terceiro) — orquestra outros terceiros
+
+`utag_main`
+
+Esse é da **Tealium**, uma plataforma de **gerenciamento de tags** (parecida em função com o Google Tag Manager que vimos no HTML) — ela funciona como um "hub" que **dispara outros scripts de rastreamento** de forma centralizada. Isso significa que provavelmente existem **ainda mais** terceiros sendo carregados **indiretamente**, através da Tealium, que não aparecem diretamente como cookies na sua lista.
+
+- Categoria 5 — Preferências/consentimento e personalização (primeira parte, Globo)
+
+`cookie-banner-...`, `w3stheme`, `_pc_cookie_atual`, `_pc_randomCo...`, `_pcid`, `_pctx`, `_pat`, `_tbc`, `xbc`, `hzcc`, `utag_main`
+
+O `cookie-banner-...` guarda se você **já aceitou** o banner de cookies (evita mostrar de novo). `_pc_*` e `_pctx` parecem ligados a algum sistema de **personalização de conteúdo**.
+
+Os principais **domínios de terceiros** carregados ao visitar `ge.globo.com/futebol/times/fluminense/` são:
+
+| Domínio                                          | Empresa/Serviço          | Função                                                            |
+| ------------------------------------------------ | ------------------------ | ----------------------------------------------------------------- |
+| `google-analytics.com` / `googletagmanager.com`  | Google                   | Analytics e gerenciamento de tags                                 |
+| `googlesyndication.com` / conversão de `_gcl_au` | Google Ads               | Rastreamento de anúncios                                          |
+| `datadome.co`                                    | DataDome                 | Anti-bot/anti-fraude                                              |
+| `tealium...` (via `utag_main`)                   | Tealium                  | Orquestração de tags — provavelmente dispara ainda mais terceiros |
+| `sentry.globoi.com`                              | Sentry (via Globo)       | Monitoramento de erros JavaScript                                 |
+| `s3.glbimg.com`                                  | Amazon S3 (CDN da Globo) | Hospedagem de scripts/imagens do grupo                            |
+
+Uma página de notícias de futebol pode carregar **dezenas de cookies** e se comunica com **pelo menos 4-5 empresas terceiras diferentes** (Google, DataDome, Tealium, Sentry, além da própria infraestrutura AWS da Globo). Sendo a maior parte disso **invisível** pro usuário comum, cumprindo funções que vão de analytics e publicidade até segurança (anti-bot) e monitoramento técnico.
