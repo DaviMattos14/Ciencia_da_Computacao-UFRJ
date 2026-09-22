@@ -152,8 +152,49 @@ $$\boxed{t_{cliente-servidor} \geq \max\left(\frac{NF}{u_s}, \frac{F}{d_{min}}\r
 
 O sistema é sempre limitado pelo **maior** dos dois "gargalos possíveis". Nenhum esquema de distribuição consegue ser mais rápido que esse limite.
 
-#### P24 -- também interessante sobre p2p  
-  
-Site que usa cookies:  
+#### P24 -- também interessante sobre p2p
+- $F$: Tamanho total do arquivo a ser distribuído, medido em **bits**.
+- $N$: Número de pares (clientes) que desejam receber o arquivo.
+- $u_s$: Taxa máxima de _upload_ do enlace de acesso do servidor, em **bits/s**    
+- $u_i$: Taxa máxima de _upload_ do $i$-ésimo par, em **bits/s**.
+- $\sum_{i=1}^{N} u_i$: Capacidade total de _upload_ agregada fornecida por todos os $N$ pares, em **bits/s**.
+- $d_{\min}$: Menor taxa de _download_ entre todos os clientes (assumida muito grande e não limitante no exercício).
+- $D_{\text{P2P}}$: Tempo total de distribuição no modelo P2P, em **segundos**.
+##### a) Suponha que $u_s \le \frac{u_s + u_1 + \dots + u_N}{N}$. Especifique um esquema de distribuição que possua tempo de distribuição de $\frac{F}{u_s}$.
+
+- **Esquema de Distribuição:**
+        1. O servidor transmite o arquivo continuamente para a rede a sua taxa máxima $u_s$.
+    1. Como a taxa média agregada de upload por par $\frac{u_s + \sum u_i}{N}$ é **maior ou igual** à capacidade do servidor $u_s$, os pares juntos possuem capacidade de upload mais do que suficiente para replicar internamente qualquer fluxo que chegue do servidor.
+    2. O servidor divide a transmissão de $u_s$ enviando fatias para diferentes pares. Cada par, assim que recebe um bit do servidor, o redistribui para os demais pares utilizando sua própria capacidade de upload.
+        
+- **Cálculo do Tempo de Distribuição:** Como a capacidade de redistribuição da rede de pares não é o gargalo, o fator limitante do sistema é simplesmente o tempo necessário para o servidor injetar **uma única cópia completa** do arquivo de $F$ bits na rede:
+    $$D_{\text{P2P}} = \frac{F}{u_s}$$
+##### b) Suponha que $u_s > \frac{u_s + u_1 + \dots + u_N}{N}$. Especifique um esquema de distribuição que possua tempo de distribuição de $\frac{N F}{u_s + u_1 + \dots + u_N}$.
+
+- **Esquema de Distribuição:**
+
+    1. Neste cenário, a capacidade de upload do servidor $u_s$ é superior à média de upload por par da comunidade. O gargalo do sistema passa a ser a **capacidade de upload total agregada do sistema** ($u_{\text{total}} = u_s + \sum u_i$).
+
+    2. O servidor e todos os $N$ pares operam a **100% de suas capacidades de upload** continuamente durante todo o processo.
+
+        
+    3. O servidor envia blocos inéditos aos pares e os pares redistribuem esses blocos entre si de forma perfeitamente balanceada.
+
+        
+- **Cálculo do Tempo de Distribuição:** Para entregar $1$ cópia do arquivo de $F$ bits para $N$ pares, o sistema como um todo precisa realizar o upload total de $N \cdot F$ bits de dados. Com o sistema transmitindo à taxa agregada máxima de $u_s + \sum_{i=1}^{N} u_i$, o tempo total necessário para concluir o upload dos $N \cdot F$ bits é:
+
+    $$D_{\text{P2P}} = \frac{N F}{u_s + \sum_{i=1}^{N} u_i}$$
+##### c) Conclua que o tempo mínimo de distribuição é, em geral, dado por $\max \left\{ \frac{F}{u_s}, \frac{N F}{u_s + u_1 + \dots + u_N} \right\}$.
+- **Demonstração/Conclusão:**
+        1. **Restrição do Servidor:** Para que a comunidade de pares receba o arquivo, pelo menos 1 cópia completa de $F$ bits precisa sair do servidor. Como a taxa máxima de upload do servidor é $u_s$, temos obrigatoriamente $D_{\text{P2P}} \ge \frac{F}{u_s}$.
+        
+    2. **Restrição da Capacidade Agregada:** O trabalho total de upload exigido pela aplicação é $N \cdot F$ bits. A taxa máxima com que a rede inteira consegue realizar uploads é $u_s + \sum u_i$. Logo, temos $D_{\text{P2P}} \ge \frac{N F}{u_s + \sum u_i}$.
+     
+    3. **Restrição de Download (Geral):** Se $d_{\min}$ não fosse infinito, teríamos também a restrição $D_{\text{P2P}} \ge \frac{F}{d_{\min}}$.
+       
+    Unindo as restrições físicas (e considerando $d_{\min}$ muito grande), o tempo mínimo de distribuição em P2P é o limite inferior mais rigoroso (o valor máximo entre as restrições):
+        $$D_{\text{P2P}} = \max \left\{ \frac{F}{u_s}, \frac{N F}{u_s + \sum_{i=1}^{N} u_i} \right\}$$
+    
+### Site que usa cookies:  
   
 Escolha um site que você goste e tente descobrir como que ele usa cookies -- para isso, estude o HTML do site. Indique também quais outros sites são acessados, sem você saber, quando você acessa o site em questão
