@@ -1,13 +1,74 @@
 ##### P4 -- HTTP GET - parsing humano   
-  
+
+- **a) Qual é o URL do documento requisitado pelo navegador?**
+    - **Resposta:** `[http://gaia.cs.umass.edu/cs453/index.html](http://gaia.cs.umass.edu/cs453/index.html)`.
+        
+- **b) Qual versão do HTTP o navegador está rodando?**
+    - **Resposta:** `HTTP/1.1`.
+        
+- **c) O navegador requisita uma conexão não persistente ou persistente?**
+    - O cabeçalho `Connection: keep-alive` indica reutilização do socket.
+    - **Resposta:** Persistente (`keep-alive`).
+        
+- **d) Qual é o endereço IP do hospedeiro no qual o navegador está rodando?**
+    - **Resposta:** **Não é possível determinar**. O endereço IP do cliente pertence aos cabeçalhos do protocolo IP (camada de rede), não estando presente no payload da mensagem HTTP (camada de aplicação).
+        
+- **e) Qual tipo de navegador inicia essa mensagem? Por que o tipo de navegador é necessário?**
+    - **Resposta:** É o `Mozilla/5.0` (Netscape 7.2 no Windows NT 5.1). O servidor usa essa informação para negociar conteúdo e enviar versões formatadas especificamente para aquele navegador.
+
 ##### P7 -- web browser  
-  
+  1. **Etapa DNS:** Para traduzir o nome de domínio para endereço IP visitando $n$ servidores DNS, o tempo decorrido é a soma das latências individuais: $\sum_{i=1}^{n} RTT_i$.    
+2. **Etapa TCP Handshake:** Aberta a conexão, consome-se $1 \cdot RTT_0$ para sincronizar os pacotes SYN e SYN/ACK.
+3. **Etapa HTTP Request/Response:** O envio da requisição GET e a recepção do texto HTML consomem mais $1 \cdot RTT_0$ (desprezando o tempo de transmissão físico por ser muito pequeno).
+$$\text{Tempo Total} = \left( \sum_{i=1}^{n} RTT_i \right) + 2 \cdot RTT_0$$
 ##### P8 -- web browser   
-  
+##### a) HTTP Não Persistente sem Conexões TCP Paralelas
+- Cada objeto exige $1\text{ RTT}_0$ para abrir o TCP e $1\text{ RTT}_0$ para buscar o arquivo.
+- Para o arquivo base + $8$ objetos ($9$ objetos no total):
+    $$T = RTT_{\text{DNS}} + 2 \cdot RTT_0 + 8 \times (2 \cdot RTT_0) = RTT_{\text{DNS}} + 18 \cdot RTT_0$$
+##### b) HTTP Não Persistente com 6 Conexões Paralelas
+- **HTML Base:** $RTT_{\text{DNS}} + 2 \cdot RTT_0$.
+- **8 Objetos em paralelo (Limite de 6 por vez):**
+	- _Lote 1_ (6 objetos em paralelo): $2 \cdot RTT_0$.        
+	- _Lote 2_ (2 objetos restantes em paralelo): $2 \cdot RTT_0$.
+$$T = RTT_{\text{DNS}} + 2 \cdot RTT_0 + 2 \cdot RTT_0 + 2 \cdot RTT_0 = RTT_{\text{DNS}} + 6 \cdot RTT_0$$
+##### c) HTTP Persistente (com Pipelining)
+- Conexão aberta no HTML base ($2 \cdot RTT_0$).
+- Os $8$ objetos são pedidos juntos numa única rajada e respondidos consecutivamente ($1 \cdot RTT_0$).
+$$T = RTT_{\text{DNS}} + 2 \cdot RTT_0 + 1 \cdot RTT_0 = RTT_{\text{DNS}} + 3 \cdot RTT_0$$
 ##### P9 -- caching -- interessante!   
-  
+##### a) Sem Cache Instalação
+1. **Taxa de Chegada de Tráfego ($\beta$):**
+    $$\beta = 16\text{ req/s} \times 1\text{ Mbit} = 16\text{ Mbps}$$
+2. **Utilização do Enlace ($I$):**
+    $$I = \frac{16\text{ Mbps}}{15\text{ Mbps}} = 1{,}067$$
+3. **Análise:** Como $I > 1$, a fila cresce de forma ilimitada, o atraso de acesso $d_{\text{acesso}} \to \infty$, tornando o **tempo de resposta total infinito** (falha na rede).
+##### b) Com Cache Instalado na LAN ($h = 0{,}4$)
+1. **Novo tráfego no enlace de acesso:** Apenas a fração não satisfeita localmente ($1 - h = 0{,}6$) passa pelo enlace.
+       $$\beta_{\text{novo}} = (1 - 0{,}4) \times 16\text{ Mbps} = 9{,}6\text{ Mbps}$$
+2. **Nova Intensidade de Tráfego ($I_{\text{novo}}$):**
+$$I_{\text{novo}} = \frac{9{,}6\text{ Mbps}}{15\text{ Mbps}} = 0{,}64$$
+3. **Calculando $\Delta$:**    $$\Delta = \frac{1\text{ Mbit}}{15\text{ Mbps}} = 0{,}0667\text{ s}$$
+4. **Calculando $d_{\text{acesso}}$:**
+    $$d_{\text{acesso}} = \frac{0{,}0667}{1 - 0{,}64} = \frac{0{,}0667}{0{,}36} \approx 0{,}185\text{ s}$$
+5. **Calculando o Tempo Médio de Resposta Total ($T_{\text{médio}}$):** (Considerando $d_{\text{LAN}} \approx 0\text{ s}$)   $$T_{\text{médio}} = 0{,}4 \cdot (0) + 0{,}6 \cdot (0{,}185 + 3) = 0{,}6 \cdot (3{,}185) \approx 1{,}911\text{ segundos}$$
 ##### P10 -- HTTP persistente x não persistente   
-  
+
+##### **Cenário:**
+
+- Enlace de $10\text{ metros}$ com taxa $150\text{ bits/s}$ em ambas as direções.
+- Pacote de dados = $100.000\text{ bits}$ ($100\text{ Kbits}$).
+- Pacote de controle (ACK/Handshake) = $200\text{ bits}$.
+- Página inicial contém $10$ objetos referenciados de $100\text{ Kbits}$.
+##### **Análise para Instâncias Paralelas Não Persistentes:**
+
+- **Dividindo a Banda:** Com $N$ conexões paralelas, cada conexão recebe uma fatia igual $\frac{150}{N}\text{ bits/s}$.
+- **Conclusão:** Abrir $N$ conexões não persistentes **não traz benefícios reais de tempo de transmissão**, pois a largura de banda total do enlace é fixa ($150\text{ bits/s}$). Na verdade, piora a eficiência total devido ao _overhead_ repetido de pacotes de controle de $200\text{ bits}$ multiplicados por cada handshake.
+##### **Análise para HTTP Persistente:**
+
+- **Desempenho:** O HTTP persistente evita $10$ handshakes TCP e economiza pacotes de controle extras no enlace de baixa largura de banda.
+- **Ganhos:** **Sim, os ganhos são significativos**, eliminando a latência de controle e a divisão desnecessária de banda em conexões paralelas concorrentes.
+
 ##### P13 -- calcule também o tempo médio para a transmissão de objetos em cada caso -- qual o tempo médio de transmissão de objetos no item a)? qual o tempo médio de transmissão de objetos no item b)? explique porque o tempo médio depende da ordem de serviço
 
 - **Vídeo:** 2.000 quadros
