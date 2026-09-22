@@ -198,3 +198,6 @@ O sistema é sempre limitado pelo **maior** dos dois "gargalos possíveis". Nenh
 ### Site que usa cookies:  
   
 Escolha um site que você goste e tente descobrir como que ele usa cookies -- para isso, estude o HTML do site. Indique também quais outros sites são acessados, sem você saber, quando você acessa o site em questão
+
+Site: https://ge.globo.com/futebol/times/fluminense/
+
