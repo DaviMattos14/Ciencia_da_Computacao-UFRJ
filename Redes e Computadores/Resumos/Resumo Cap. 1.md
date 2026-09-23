@@ -36,7 +36,7 @@ Um **protocolo** define o **formato** (sintaxe) e a **ordem** das mensagens troc
 - **Cut-through:** não espera pacote inteiro
 ### 6. Comutação de circuitos vs. pacotes
 
-| Circuitos      | Pacotes                           |                            |
+|                | Circuitos                         | Pacotes                    |
 | -------------- | --------------------------------- | -------------------------- |
 | Recursos       | Reservados/dedicados              | Compartilhados sob demanda |
 | Taxa garantida | Sim                               | Não                        |
@@ -44,10 +44,10 @@ Um **protocolo** define o **formato** (sintaxe) e a **ordem** das mensagens troc
 | Técnicas       | FDM / TDM                         | —                          |
 | Melhor para    | Tráfego constante, sessões longas | Tráfego variável/rajado    |
 
-|Circuitos|Pacotes|
-|---|---|---|
-|Recursos|Reservados (FDM/TDM)|Compartilhados|
-|Melhor para|Tráfego constante|Tráfego variável|
+|             | Circuitos            | Pacotes          |
+| ----------- | -------------------- | ---------------- |
+| Recursos    | Reservados (FDM/TDM) | Compartilhados   |
+| Melhor para | Tráfego constante    | Tráfego variável |
 
 ### 7. Os quatro atrasos nodais
 
