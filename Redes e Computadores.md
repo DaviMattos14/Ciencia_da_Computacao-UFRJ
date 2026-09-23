@@ -144,14 +144,12 @@ Para provar quantitativamente por que a comutação de pacotes permite admitir *
 -  m  (ou  N ): Número total de usuários independentes que compartilham o enlace.
 -  p : Probabilidade de um usuário individual estar ativo (transmitindo dados) em um dado instante.
 -  A  (ou  X ): Variável aleatória discreta que representa o **número de usuários ativos simultaneamente** em um dado instante.
--  R : Capacidade total do enlace de saída (ex: $ 1\text{ Mbps}$).
+-  R : Capacidade total do enlace de saída (ex: $1\text{ Mbps}$).
 - ($r$) (ou $C$): Número máximo de usuários simultâneos que a rede consegue atender sem formar fila (ex: se cada usuário precisa de $100\text{ kbps}$ , um enlace de $1\text{ Mbps}$ suporta $r = \frac{1\text{ Mbps}}{100\text{ kbps}} = 10$  usuários dedicados).
 
 ##### 4. Hipóteses do Modelo
-
 - Os  m  usuários comportam-se de maneira totalmente **independente**.
 - Cada usuário tem a mesma probabilidade  p  de estar ativo em qualquer instante.
-
 ##### 5. Aplicação da Fórmula
 
 Como cada usuário está ativo ( 1 ) com probabilidade  p  ou inativo ( 0 ) com probabilidade  1-p , o número total de ativos  A  segue uma **Distribuição Binomial**:
@@ -160,7 +158,7 @@ $$A \sim \text{Binomial}(m, p)$$
 
 A probabilidade de haver exatamente  a  usuários ativos no mesmo instante é dada pela Função de Massa de Probabilidade (PMF):
 
-$$P(A = a) = \binom{m}{a} p^{a (1-p)^{m-a}} = \frac {m!}{a!(m-a)!} p^{a (1-p)^{m-a}}$$
+$$P(A = a) = \binom{m}{a} p^{a} (1-p)^{m-a} = \frac {m!}{a!(m-a)!} p^{a} (1-p)^{m-a}$$
 
 A **Carga Esperada** (número médio de usuários ativos) é: $$E[A] = m \cdot p$$
 
