@@ -188,21 +188,21 @@ Modela o número de usuários ativos quando a população total de usuários ( m
 
 ##### 2. Por que estamos usando esse modelo?
 
-Calcular somatórios binomiais com números combinatórios  \binom{m}{a}  para  m = 1000  ou mais é computacionalmente custoso e suscetível a estouros de precisão. A distribuição de Poisson fornece uma aproximação analítica rápida e precisa.
+Calcular somatórios binomiais com números combinatórios  $\binom{m}{a}$  para  $m = 1000$  ou mais é computacionalmente custoso e suscetível a estouros de precisão. A distribuição de Poisson fornece uma aproximação analítica rápida e precisa.
 
 ##### 3. Significado das Variáveis e Unidades
 
--  \lambda = m \cdot p : Carga média total mantida constante (unidade: número médio de usuários ativos).
+-  $\lambda = m \cdot p$ : Carga média total mantida constante (unidade: número médio de usuários ativos).
 
 ##### 4. Hipóteses
 
--  m \to \infty  (grande número de fontes).
--  p \to 0  (cada fonte raramente ativa).
--  \lambda = m \cdot p  permanece moderado.
+-  $m \to \infty$  (grande número de fontes).
+-  $p \to 0$  (cada fonte raramente ativa).
+-  $\lambda = m \cdot p$  permanece moderado.
 
 ##### 5. Aplicação da Fórmula
 
-Substituindo o limite da Binomial quando  m \to \infty , obtemos a PMF da **Poisson**:
+Substituindo o limite da Binomial quando  $m \to \infty$ , obtemos a PMF da **Poisson**:
 
 $$P(A = a) \approx \frac{e^{-\lambda} \cdot \lambda^a}{a!}$$
 
