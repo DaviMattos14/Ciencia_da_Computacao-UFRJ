@@ -220,9 +220,9 @@ A variável binomial  A  tira apenas uma "fotografia" estática de um instante d
 
 ##### 3. Significado das Variáveis e Unidades
 
--  q : Probabilidade de um _slot_ estar descongestionado (sucesso, ou seja,  P(A \le r) ).
--  1 - q : Probabilidade de o _slot_ estar congestionado ( P(A > r) ).
--  S : Número de _slots_ futuros até observar o primeiro _slot_ descongestionado ( S \in {1, 2, 3, \dots} ).
+-  q : Probabilidade de um _slot_ estar descongestionado (sucesso, ou seja,  $P(A \le r)$ ).
+-  1 - q : Probabilidade de o _slot_ estar congestionado ( $P(A > r)$ ).
+-  S : Número de _slots_ futuros até observar o primeiro _slot_ descongestionado ( $S \in {1, 2, 3, \dots}$ ).
 
 ##### 4. Hipóteses
 
@@ -240,7 +240,7 @@ $$E[S] = \frac{1}{q}$$
 
 ##### 6. Interpretação em Termos de Redes
 
-Se a probabilidade de um slot estar normal for  q = 0{,}50 , o tempo médio de descongestionamento é  E[S] = \frac{1}{0{,}50} = 2\text{ slots} . Se a rede estiver extremamente sobrecarregada com  q = 0{,}20 , levará em média  E[S] = \frac{1}{0{,}20} = 5\text{ slots}  para se recuperar.
+Se a probabilidade de um slot estar normal for  $q = 0{,}50$ , o tempo médio de descongestionamento é  $E[S] = \frac{1}{0{,}50} = 2\text{ slots}$ . Se a rede estiver extremamente sobrecarregada com  $q = 0{,}20$ , levará em média  $E[S] = \frac{1}{0{,}20} = 5\text{ slots}$  para se recuperar.
 
 ---
 
