@@ -759,4 +759,737 @@ A camada de transporte da Internet oferece dois protocolos principais para as ap
 |**Sobrecarga (_Overhead_)**|Maior (cabeçalho de 20 bytes + latência de _handshake_).|Mínima (cabeçalho leve de 8 bytes, transmissão imediata).|
 |**Uso Típico**|Web (HTTP), E-mail (SMTP), Transferência de Arquivos.|DNS (consultas rápidas), Streaming de Vídeo/Áudio em Tempo Real, VoIP.|
 
+## 2.2 A Web e o HTTP
+
 ---
+
+### 1. O Conceito de HTTP e a Semântica Sem Estado (_Stateless_)
+
+#### Fenômeno de Rede
+
+Quando um usuário navega pela Web, ele requisita arquivos HTML, imagens JPEG, arquivos CSS e scripts JS espalhados por servidores na rede.
+
+#### Conceito
+
+O **HTTP (_Hypertext Transfer Protocol_)** é o protocolo da camada de aplicação que governa a comunicação Web. Ele opera segundo a arquitetura **Cliente-Servidor**:
+
+- **Navegador (Cliente):** Envia mensagens de requisição HTTP (_HTTP Request_) solicitando objetos.
+- **Servidor Web:** Recebe a requisição, localiza o objeto e devolve uma mensagem de resposta (_HTTP Response_) contendo o objeto solicitado.
+
+##### A Propriedade _Stateless_ (Sem Estado)
+
+O HTTP é um **protocolo sem estado (_stateless_)**. O servidor Web atende às requisições do cliente sem armazenar informações sobre requisições anteriores feitas por aquele mesmo usuário.
+
+- **Vantagem:** Simplifica drasticamente o projeto do servidor, permitindo que ele atenda a milhões de requisições simultâneas sem consumir memória para manter o histórico de cada cliente.
+- **Contorno da Limitação:** Para aplicações que exigem estado (como carrinhos de compras e sessões de login), a camada de aplicação utiliza **cookies** e dados de sessão.
+
+---
+
+### 2. A Definição do RTT e o _Three-Way Handshake_ do TCP
+
+Para calcular quanto tempo leva para carregar uma página Web, precisamos quantificar o tempo de viagem de um pacote de ida e volta na rede.
+
+---
+
+#### Modelo Matemático: O RTT e a Abertura de Conexão TCP
+
+#### 1. O que representa?
+
+- **RTT (_Round-Trip Time_):** O tempo necessário para um pequeno pacote viajar do cliente ao servidor e retornar ao cliente.
+- **Composição do RTT:** O RTT inclui a soma de todos os atrasos físicos do caminho: atrasos de propagação nos enlaces, atrasos de fila nos roteadores e atrasos de processamento.
+
+##### 2. Por que estamos usando este modelo?
+
+O HTTP não transporta dados diretamente pelo meio físico; ele utiliza o protocolo **TCP** na camada de transporte para garantir uma entrega confiável. Antes de enviar o primeiro `GET` HTTP, o cliente precisa obrigatoriamente estabelecer uma conexão TCP via **Apresentação de Três Vias (_Three-Way Handshake_)**.
+
+##### 3. Aplicação do Modelo de Conexão
+
+1. **Passo 1 (SYN):** Cliente envia um segmento TCP SYN ao servidor.
+2. **Passo 2 (SYN/ACK):** Servidor responde com um segmento TCP SYN/ACK. _(Estes dois passos consomem exatos **1 RTT**)._
+3. **Passo 3 (ACK + GET):** O cliente envia o ACK de confirmação combinado com a mensagem de requisição `HTTP GET`.
+4. **Passo 4 (Resposta):** O servidor processa o pedido e envia o arquivo HTML/Objeto de volta. _(A requisição e a recepção do objeto consomem mais **1 RTT**)._
+
+##### 4. Interpretação em Termos de Latência Web
+
+A transferência do primeiro arquivo de uma página Web (o HTML base) exige, no mínimo:
+
+$$T_{\text{base}} = 2 \text{ RTT} + t_{\text{transmissão}}$$
+
+onde **1 RTT** é gasto no _handshake_ TCP e **1 RTT** é gasto na requisição/resposta HTTP.
+
+---
+
+### 3. Os 4 Modelos de Conexão HTTP e a Análise Matemática de Latência (Kurose + UFRJ)
+
+#### Fenômeno de Rede
+
+Uma página Web moderna raramente possui apenas um arquivo HTML; ela contém um arquivo HTML base e **$n$ objetos referenciados** (imagens, vídeos, scripts) no mesmo servidor. Como o navegador deve organizar o transporte desses $n$ objetos pela rede?
+
+Combinando as opções de **Persistência** da conexão TCP com o **Paralelismo** do navegador, surgem 4 modelos clássicos de transporte analisados na UFRJ:
+
+---
+
+#### Modelo 1: HTTP Não Persistente Sem Paralelismo (HTTP/1.0 Padrão)
+
+##### 1. Funcionamento
+
+A conexão TCP é aberta para transferir um único objeto e **imediatamente fechada** após a entrega. Os $n$ objetos referenciados são baixados estritamente em série.
+
+##### 2. Análise Matemática do Tempo Total
+
+Para o arquivo-base HTML e os $n$ objetos referenciados:
+
+- O HTML base custa $2 \text{ RTT}$ (1 RTT para TCP + 1 RTT para HTTP).
+- Cada um dos $n$ objetos exige uma nova conexão TCP, custando $2 \text{ RTT}$ cada.
+
+$$T_{\text{não-persistente, em série}} = 2 \text{ RTT} + 2n \text{ RTT} = 2(n + 1) \text{ RTT}$$
+
+_(desprezando o tempo de transmissão de objetos pequenos)._
+
+##### 3. Avaliação de Desempenho
+
+- **Vantagens:** O servidor libera memórias e descritores de _sockets_ rapidamente assim que entrega o objeto, sendo mais simples e resiliente contra ataques de conexões presas.
+- **Desvantagens:** Pior desempenho de latência. O cliente paga o custo de $1 \text{ RTT}$ de _handshake_ repetidamente para cada imagem pequena da página.
+
+---
+
+#### Modelo 2: HTTP Não Persistente Com Paralelismo
+
+##### 1. Funcionamento
+
+O navegador abre **múltiplas conexões TCP independentes e simultâneas** (geralmente até $k = 6$) para baixar os $n$ objetos em paralelo.
+
+##### 2. Análise Matemática do Tempo Total
+
+- O HTML base custa $2 \text{ RTT}$.
+- Assumindo paralelismo perfeito (onde as conexões simultâneas baixam os objetos ao mesmo tempo), os RTTs dos $n$ objetos são sobrepostos.
+
+$$T_{\text{não-persistente, paralelo}} = 2 \text{ RTT (HTML)} + 2 \text{ RTT (Objetos em paralelo)} = 4 \text{ RTT}$$
+
+##### 3. Avaliação de Desempenho
+
+- **Vantagens:** Redução drástica no tempo de carregamento perceptível.
+- **Desvantagens:** Consumo massivo de recursos no servidor, que precisa processar múltiplos _handshakes_ e manter vários _sockets_ abertos simultaneamente para o mesmo cliente.
+
+---
+
+#### Modelo 3: HTTP Persistente Sem Paralelismo (HTTP/1.1 Padrão / _Pipelining_)
+
+##### 1. Funcionamento
+
+O servidor **deixa a conexão TCP aberta** após enviar a resposta do HTML. Os $n$ objetos subsequentes são solicitados através da **mesma conexão TCP** já estabelecida.
+
+##### 2. Análise Matemática do Tempo Total
+
+- O HTML base custa $2 \text{ RTT}$ (1 RTT TCP + 1 RTT HTTP).
+- Como o TCP já está aberto, cada um dos $n$ objetos subsequentes custa apenas **1 RTT** (apenas o pedido/resposta HTTP).
+
+$$T_{\text{persistente, em série}} = 2 \text{ RTT} + n \text{ RTT} = (n + 2) \text{ RTT}$$
+
+##### 3. Avaliação de Desempenho
+
+- **Vantagens:** Economiza $1 \text{ RTT}$ de _handshake_ por objeto e poupa CPU e memória do servidor ao evitar a criação/destruição contínua de _sockets_.
+- **Desvantagens:** O servidor precisa gerenciar _timeouts_ de conexões ociosas. Continua sujeito ao **bloqueio de cabeça de fila (_Head-of-Line Blocking_)**.
+
+---
+
+#### Modelo 4: HTTP Persistente Com Paralelismo (Web Moderna)
+
+##### 1. Funcionamento
+
+O cliente **reaproveita a conexão TCP persistente existente** para enviar requisições sequenciais, mas **abre uma nova conexão TCP em paralelo** para acelerar objetos adicionais simultaneamente.
+
+##### 2. Análise Matemática do Tempo Total
+
+- O HTML base e o objeto reusado na conexão 1 custam $2 \text{ RTT} + 1 \text{ RTT}$.
+- A nova conexão paralela aberta para o objeto 2 custa $2 \text{ RTT}$.
+- O tempo total da fase de objetos é o máximo entre as vias paralelas:
+
+$$T_{\text{persistente, paralelo}} = 2 \text{ RTT (HTML)} + \max(1 \text{ RTT}, 2 \text{ RTT}) = 4 \text{ RTT}$$
+
+---
+
+#### Tabela Resumo dos Modelos de Conexão HTTP (UFRJ)
+
+| Modelo de Conexão                   | Conexões TCP Abertas               | Fórmula do Tempo Total (para $n$ objetos) | Vantagem Principal                            | Desvantagem Principal                         |
+| :---------------------------------- | :--------------------------------- | :------------------------------------------ | :-------------------------------------------- | :-------------------------------------------- |
+| **Não Persistente Sem Paralelismo** | $n + 1$ conexões (1 por vez)     | $2(n + 1) \text{ RTT}$                    | Liberação rápida de recursos no servidor.     | Altíssima latência (paga RTT TCP para tudo).  |
+| **Não Persistente Com Paralelismo** | $n + 1$ conexões (várias juntas) | $4 \text{ RTT}$                           | Carregamento muito rápido.                    | Sobrecarga severa de CPU/sockets no servidor. |
+| **Persistente Sem Paralelismo**     | 1 única conexão TCP                | $(n + 2) \text{ RTT}$                     | Economiza RTTs de TCP e recursos no servidor. | Sofre com Head-of-Line (HOL) Blocking.        |
+| **Persistente Com Paralelismo**     | Múltiplas conexões mantidas        | $4 \text{ RTT}$                           | Equilíbrio entre paralelismo e reuso de TCP.  | Alto número de conexões mantidas ociosas.     |
+
+---
+
+### 4. O Bloqueio de Cabeça de Fila (HOL Blocking) e a Evolução do HTTP (HTTP/1.1 $\to$ HTTP/2 $\to$ HTTP/3)
+
+#### Fenômeno de Rede
+
+No HTTP/1.1 com conexão persistente única, as requisições são atendidas na ordem de chegada (FCFS: _First-Come, First-Served_). Se o cliente solicitar um arquivo gigante (ex: um vídeo) seguido por três imagens pequenas, o que acontece?
+
+---
+
+#### Modelo Matemático: O Custo do Bloqueio HOL (UFRJ / Kurose)
+
+##### 1. Aplicação do Cálculo
+
+Suponha que um objeto grande $O_1$ leve **10 unidades de tempo** para ser transmitido e três objetos pequenos ($O_2, O_3, O_4$) levem **1 unidade de tempo** cada.
+
+- **Cenário A: Atendimento FCFS (Objeto Grande Primeiro - HTTP/1.1)**
+    
+    - Instante de conclusão de $O_1$: $t = 10$.
+    - Instante de conclusão de $O_2$: $t = 10 + 1 = 11$.
+    - Instante de conclusão de $O_3$: $t = 11 + 1 = 12$.
+    - Instante de conclusão de $O_4$: $t = 12 + 1 = 13$.
+    - **Tempo Médio de Conclusão Percebido:** $$\bar{T}_{\text{HOL}} = \frac{10 + 11 + 12 + 13}{4} = \frac{46}{4} = 11{,}5 \text{ unidades}$$
+- **Cenário B: Atendimento Reordenado/Intercalado (Objetos Pequenos Primeiro)**
+    
+    - Instante de conclusão de $O_2$: $t = 1$.
+    - Instante de conclusão de $O_3$: $t = 2$.
+    - Instante de conclusão de $O_4$: $t = 3$.
+    - Instante de conclusão de $O_1$: $t = 3 + 10 = 13$.
+    - **Tempo Médio de Conclusão Percebido:** $$\bar{T}_{\text{otimizado}} = \frac{1 + 2 + 3 + 13}{4} = \frac{19}{4} = 4{,}75 \text{ unidades}$$
+
+##### 2. Interpretação em Termos de Redes
+
+O arquivo grande termina no exato mesmo instante ($t = 13$) em ambos os cenários. No entanto, reordenar/intercalar a transmissão reduz o tempo médio de espera do usuário de **11,5 para 4,75 (uma redução de mais de 58%)** sem adicionar 1 bps de largura de banda à rede!
+
+---
+
+#### Solução Tecnológica nas Versões do HTTP
+
+1. **HTTP/2 (Padronizado em 2015):**
+    
+    - **Intercalação de Quadros (_Frame Interleaving_):** Divide os objetos em quadros pequenos e intercala sua transmissão na mesma conexão TCP. O vídeo grande não bloqueia mais as imagens pequenas.
+    - **Problema Residual:** Como o HTTP/2 ainda roda sobre uma **única conexão TCP**, se um único pacote for perdido na rede, o TCP paralisa a entrega de **todos os quadros** até retransmitir o segmento perdido (Bloqueio HOL no nível de Transporte).
+2. **HTTP/3 (Padronizado via QUIC):**
+    
+    - Substitui o TCP subjacente pelo protocolo **QUIC (que opera sobre UDP)**.
+    - O QUIC implementa fluxos de dados independentes e criptografados. Se um pacote de uma imagem for perdido, apenas aquele fluxo sofre retransmissão; todos os outros fluxos continuam fluindo sem nenhum bloqueio!
+
+---
+
+### 5. Caches Web (_Proxy Servers_) e o GET Condicional
+
+#### Fenômeno de Rede
+
+Como reduzir a latência percebida pelo usuário e evitar o estrangulamento de um enlace de acesso saturado sem precisar gastar fortunas aumentando a largura de banda física?
+
+#### Conceito
+
+Um **Cache Web (Servidor Proxy)** é um nó de rede instalado na LAN local que atende a requisições HTTP em nome do servidor de origem.
+
+- **Dualidade Papel:** O cache age simultaneamente como **servidor** (para os navegadores locais) e como **cliente** (em relação aos servidores de origem na Internet).
+
+---
+
+#### Unificação Matemática: O Impacto do Cache no Atraso Médio (Notas UFRJ)
+
+##### 1. Aplicação do Cálculo
+
+Considere uma rede institucional onde a taxa de acerto do cache (_Hit Rate_) é $p_{\text{hit}} = 0{,}40$ (40% das requisições são servidas localmente em $T_{\text{cache}} = 10\text{ ms}$). As 60% restantes ($p_{\text{miss}} = 0{,}60$) precisam atravessar a Internet e sofrem um atraso total de $T_{\text{Internet}} = 2{,}01\text{ s}$.
+
+O **Atraso Médio Total de Resposta** é a média ponderada:
+
+$$T_{\text{médio}} = p_{\text{hit}} \cdot T_{\text{cache}} + (1 - p_{\text{hit}}) \cdot T_{\text{Internet}}$$
+
+$$T_{\text{médio}} = 0{,}40 \cdot (0{,}010\text{ s}) + 0{,}60 \cdot (2{,}010\text{ s}) = 0{,}004 + 1{,}206 = 1{,}21\text{ segundo}$$
+
+##### 2. Interpretação em Termos de Redes
+
+Além de cortar a latência média de mais de 2 segundos para 1,21 segundo, o cache reduz a carga no enlace de acesso em 40% ($a_{\text{efetiva}} = 0{,}60 \cdot a$). Isso retira a intensidade de tráfego $I$ da zona de saturação (onde $I \to 1$) e estabiliza as filas do roteador.
+
+---
+
+#### O Mecanismo do GET Condicional (`304 Not Modified`)
+
+Para evitar que o cache entregue uma cópia local desatualizada de um arquivo que sofreu alterações no servidor de origem, o HTTP utiliza o **GET Condicional**:
+
+```
+[ Cliente ]  ---> (GET /fig.png) ---> [ Cache Web ]  ---(GET com If-Modified-Since)---> [ Servidor Origem ]
+                                      [ Local ]  <--- (304 Not Modified) ------- [ Servidor Origem ]
+[ Cliente ]  <--- (200 OK + Dados) -- [ Cache Web ]
+```
+
+1. Quando o cache armazena um objeto, ele salva a data enviada no cabeçalho `Last-Modified:` do servidor.
+2. Quando outro cliente pede o mesmo objeto, o cache envia uma requisição de validação contendo o cabeçalho: `If-Modified-Since: <Data da Cópia Local>`
+3. **Se o objeto NÃO foi modificado:** O servidor responde com o código de status **`304 Not Modified`** com um **corpo de mensagem completamente vazio**.
+4. **Resultado:** Economiza-se 100% da largura de banda do arquivo e o cache entrega imediatamente a sua cópia local.
+
+---
+
+## 2.3 Correio Eletrônico na Internet: SMTP, POP3, IMAP e Webmail
+
+### 2.3.1 Arquitetura do Sistema de E-mail
+
+#### Fenômeno de Rede
+
+Ao contrário da navegação Web, onde a comunicação ocorre em tempo real entre o navegador do usuário e o servidor Web, o correio eletrônico é um sistema de **comunicação assíncrona**. O remetente envia a mensagem mesmo que o destinatário esteja _offline_.
+
+#### Conceito
+
+A arquitetura de e-mail é composta por três elementos fundamentais:
+
+```
+[ Agente de Usuário A ]                    [ Agente de Usuário B ]
+    (User Agent)                               (User Agent)
+         |                                          ^
+   (SMTP / Push)                              (POP3/IMAP / Pull)
+         v                                          |
+[ Servidor de E-mail ]  ===(SMTP / Push)===>  [ Servidor de E-mail ]
+     (Remetente)                                (Destinatário)
+```
+
+1. **Agentes de Usuário (_User Agents - UA_):** Softwares que permitem ao usuário ler, responder, criar e organizar mensagens (ex: Outlook, Thunderbird ou a interface do Gmail).
+2. **Servidores de Correio (_Mail Servers_):** O coração da infraestrutura. Cada usuário possui uma **caixa de correio (_mailbox_)** localizada em seu servidor de e-mail.
+    - **Fila de Mensagens (_Message Queue_):** Se o servidor do remetente não conseguir entregar uma mensagem imediatamente ao servidor do destinatário, a mensagem é mantida em uma fila para retentativas periódicas (ex: a cada 30 minutos). Se após alguns dias a entrega falhar, ela é devolvida com mensagem de erro (_bounce_).
+3. **Protocolo SMTP (_Simple Mail Transfer Protocol_):** O protocolo padrão da camada de aplicação para transferência de e-mails entre servidores de correio.
+
+---
+
+### 2.3.2 O Protocolo SMTP vs. HTTP
+
+#### Funcionamento do SMTP
+
+- Opera sobre a camada de transporte usando **TCP na porta 25**.
+- É um protocolo orientado a texto simples (comandos ASCII e códigos de resposta de 3 dígitos).
+- A transferência de uma mensagem ocorre em três fases: **Handshake**, **Transferência de Dados** e **Encerramento**.
+- O fim do corpo da mensagem é sinalizado por uma linha contendo estritamente um **ponto único (`.`)**.
+
+---
+
+#### Análise Comparativa: SMTP vs. HTTP (Tema Recorrente de Prova)
+
+| Critério                     | **HTTP**                                                                                      | **SMTP**                                                                                                         |
+| :--------------------------- | :-------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| **Mecanismo de Comunicação** | **Protocolo _Pull_ (Puxar):** O cliente puxa/solicita dados hospedados no servidor.           | **Protocolo _Push_ (Empurrar):** O servidor do remetente empurra/envia os dados para o servidor do destinatário. |
+| **Estrutura de Dados**       | Cada objeto (texto, imagem, vídeo) é empacotado em sua **própria mensagem de resposta HTTP**. | Todos os componentes do e-mail são codificados e combinados em uma **única mensagem composta**.                  |
+| **Formato das Mensagens**    | Suporta nativamente dados binários e qualquer tipo de mídia no corpo.                         | Restrito historicamente ao formato ASCII de 7 bits (exigindo extensões MIME para anexos binários).               |
+| **Porta Padrão TCP**         | Porta `80` (HTTP) / `443` (HTTPS).                                                            | Porta `25`.                                                                                                      |
+
+---
+
+### 2.3.3 Protocolos de Acesso ao Correio (_Mail Access Protocols_)
+
+#### Fenômeno de Rede
+
+Por que o destinatário não usa o SMTP para baixar os e-mails do seu próprio servidor de correio para o seu computador?
+
+#### Conceito
+
+O SMTP é um protocolo **exclusivamente _Push_** (utilizado para empurrar mensagens do remetente até o servidor do destino). Para puxar (_Pull_) os e-mails armazenados na sua caixa de correio no servidor para o seu dispositivo local, utilizam-se **Protocolos de Acesso ao Correio**:
+
+1. **POP3 (_Post Office Protocol - Version 3_):**
+    
+    - Protocolo extremamente simples (porta TCP 110).
+    - **Modo "Baixar e Apagar" (_Download-and-Delete_):** O agente de usuário baixa as mensagens para a máquina local e o servidor as apaga.
+    - **Modo "Baixar e Manter" (_Download-and-Keep_):** O usuário baixa as mensagens, mas mantém cópias no servidor.
+    - **Limitação:** É um protocolo **sem estado (_stateless_)** entre sessões. Se o usuário criar pastas ou marcar e-mails como lidos em uma máquina, essas alterações não se refletem em outros dispositivos.
+2. **IMAP (_Internet Message Access Protocol_):**
+    
+    - Protocolo muito mais complexo e robusto (porta TCP 143).
+    - **Mantém o Estado (_Stateful_):** Associa cada mensagem a uma pasta e mantém a árvore de diretórios centralizada no servidor.
+    - Permite que o usuário crie pastas, busque mensagens por palavra-chave no servidor e baixe apenas partes da mensagem (ex: ler o cabeçalho sem baixar um anexo de 50 MB). Ideal para acesso por múltiplos dispositivos (_smartphone_, notebook, tablet).
+3. **Correio Baseado na Web (Webmail):**
+    
+    - O usuário utiliza um navegador Web comum (HTTP/HTTPS) para se comunicar com o servidor de e-mail.
+    - A comunicação entre o navegador e o servidor do provedor ocorre via **HTTP**.
+    - A comunicação entre os servidores de e-mail na Internet continua ocorrendo estritamente via **SMTP**.
+
+---
+
+## 2.4 DNS: O Serviço de Diretório da Internet (_Domain Name System_)
+
+---
+
+### 2.4.1 O que é o DNS e Por que Roda na Borda da Rede?
+
+#### Fenômeno de Rede
+
+Os seres humanos preferem identificar recursos na rede usando nomes mnemônicos e alfanuméricos fáceis de memorizar (como `www.ufrj.br`). No entanto, os roteadores no núcleo da rede processam pacotes examinando endereços IP numéricos de tamanho fixo (como `146.164.220.1`).
+
+#### Conceito
+
+O **DNS (_Domain Name System_)** é um banco de dados distribuído e hierárquico que provê a **tradução de nomes de domínio em endereços IP** (e vice-versa).
+
+##### A Filosofia da Arquitetura do DNS
+
+O DNS é um protocolo da **Camada de Aplicação**. Por que a função essencial de traduzir endereços de rede foi projetada na camada de aplicação e não dentro do núcleo da rede (na camada IP)?
+
+- **Princípio de Projeto da Internet (_End-to-End Principle_):** Manter o núcleo da rede (_routers_) o mais simples, rápido e enxuto possível, deixando a complexidade do banco de dados de nomes para os sistemas finais na borda (_edge_).
+
+---
+
+### 2.4.2 Arquitetura Hierárquica e Distribuída do DNS
+
+Se o DNS fosse implementado como um **único servidor centralizado** no mundo, o sistema sofreria com:
+
+1. **Ponto Único de Falha:** Se o servidor caísse, toda a Internet global parava.
+2. **Volume Insuportável de Tráfego:** Bilhões de requisições por segundo congestionariam o enlace desse servidor.
+3. **Distância Geográfica:** Consultas vindas do outro lado do mundo sofreriam com altíssimos atrasos de propagação.
+
+Por isso, o DNS é estruturado como uma **árvore hierárquica distribuída**:
+
+```
+                              [ Servidores Raiz (Root DNS) ]
+                                            |
+                 +--------------------------+--------------------------+
+                 |                                                     |
+    [ Servidores TLD (.br) ]                               [ Servidores TLD (.com) ]
+                 |                                                     |
+[ Servidor Autoritativo (ufrj.br) ]                   [ Servidor Autoritativo (google.com) ]
+```
+
+1. **Servidores Raiz (_Root DNS Servers_):** Existem 13 endereços IP lógicos de servidores raiz no mundo (replicados geograficamente por centenas de servidores físicos usando _Anycast_). Eles fornecem os endereços IP dos servidores TLD.
+2. **Servidores de Domínio de Nível Superior (_Top-Level Domain - TLD_):** Responsáveis por domínios genéricos (`.com`, `.org`, `.edu`) e domínios de código de país (`.br`, `.uk`, `.fr`).
+3. **Servidores Autoritativos (_Authoritative DNS Servers_):** Mantidos por organizações ou provedores. Contêm os registros DNS oficiais que mapeiam os nomes de hospedeiros daquela organização para seus IPs.
+4. **Servidor DNS Local (_Local Name Server / Resolver_):** Não pertence estritamente à hierarquia, mas é fundamental. Cada ISP (ou rede universitária) possui um servidor DNS local. Quando um host faz uma consulta DNS, a requisição vai primeiramente para o seu DNS local, que atua como um intermediário/proxy resolvendo a cadeia.
+
+---
+
+### 2.4.3 Resolução de Nomes e Análise de RTTs: Iterativa vs. Recursiva (Kurose + UFRJ)
+
+#### Fenômeno de Rede
+
+Quando seu computador quer acessar `www.ufrj.br`, como o Servidor DNS Local descobre o IP final caso não o tenha em memória?
+
+Exemplo com 4 RTTs em Resolução Iterativa.
+
+```
+[ Host ] ---> (1. Consulta) ---> [ DNS Local ] ---> (2. Consulta) ---> [ Raiz ]
+                                 [ DNS Local ] <--- (3. Ref: TLD) <--- [ Raiz ]
+                                 [ DNS Local ] ---> (4. Consulta) ---> [ TLD .br ]
+                                 [ DNS Local ] <--- (5. Ref: Auth) <-- [ TLD .br ]
+                                 [ DNS Local ] ---> (6. Consulta) ---> [ Autoritativo ufrj.br ]
+                                 [ DNS Local ] <--- (7. Resposta) <--- [ Autoritativo ufrj.br ]
+[ Host ] <--- (8. IP Final) ---- [ DNS Local ]
+```
+
+---
+
+#### Unificação Matemática: Modelo de Latência por RTTs na Resolução DNS
+
+##### 1. Resolução Iterativa (Padrão da Internet)
+
+Na consulta **iterativa**, o servidor consultado responde com o endereço do próximo servidor da hierarquia que deve ser consultado (_"Eu não sei o IP, mas pergunte ao servidor X"_).
+
+- **Análise de RTTs:**
+    - Host $\to$ DNS Local: **1 RTT** (geralmente na rede local).
+    - DNS Local $\to$ Servidor Raiz: **1 RTT**.
+    - DNS Local $\to$ Servidor TLD (`.br`): **1 RTT**.
+    - DNS Local $\to$ Servidor Autoritativo (`ufrj.br`): **1 RTT**.
+- **Atraso Total sem Cache:** $$T_{\text{iterativo}} = \text{RTT}_{\text{local}} + \text{RTT}_{\text{raiz}} + \text{RTT}_{\text{TLD}} + \text{RTT}_{\text{auth}} \approx 4 \text{ RTTs}$$
+
+##### 2. Resolução Recursiva
+
+Na consulta **recursiva**, o nó consultado assume a responsabilidade de contatar o nó seguinte e só devolve a resposta quando obtiver o IP final.
+
+- **Carga:** Sobrecarrega os servidores dos níveis superiores da hierarquia (especialmente os servidores Raiz), e por isso é **desabilitada por padrão** nos servidores raiz e TLDs por questões de segurança e desempenho.
+
+---
+
+### 2.4.4 Registros de Recursos (_Resource Records - RRs_)
+
+O banco de dados do DNS armazena suas informações em registros de quatro campos no formato:
+
+$$(\text{Name}, \text{Value}, \text{Type}, \text{TTL})$$
+
+O campo **Type** define o significado dos campos `Name` e `Value`:
+
+1. **Tipo A (_Address_):** Mapeia um nome de host para um endereço IPv4.
+    - `(aulas.ufrj.br, 146.164.220.1, A, 86400)`
+2. **Tipo NS (_Name Server_):** Especifica o nome do servidor DNS autoritativo responsável pelo domínio.
+    - `(ufrj.br, dns.ufrj.br, NS, 86400)`
+3. **Tipo CNAME (_Canonical Name_):** Mapeia um alias/apelido para seu nome canônico (verdadeiro).
+    - `(server1.ufrj.br, webserver-prod-01.ufrj.br, CNAME, 86400)`
+4. **Tipo MX (_Mail Exchange_):** Mapeia o domínio para o nome do servidor de correio responsável por receber e-mails daquele domínio.
+    - `(ufrj.br, mail.ufrj.br, MX, 86400)`
+
+---
+
+### 2.4.5 Caching DNS e a Escolha do Transporte: UDP vs. TCP (UFRJ)
+
+#### Caching DNS
+
+Para reduzir drasticamente o tempo de resposta e o tráfego nos servidores Raiz/TLD, os servidores DNS locais armazenam em **cache** os mapeamentos aprendidos.
+
+- O campo **TTL (_Time to Live_)** especifica após quantos segundos a entrada expira e deve ser descartada do cache para garantir a consistência de dados alterados.
+
+---
+
+#### Unificação Matemática: Por que o DNS usa UDP por padrão e TCP como Exceção? (Tema Chave de Prova)
+
+##### 1. Uso do UDP (Porta 53) — Consultas Padrão
+
+- **Fenômeno:** Uma consulta DNS típica (pergunta por um IP) exige uma mensagem pequena de requisição e uma resposta enxuta.
+- **Análise de Latência:**
+    - Se o DNS utilizasse **TCP**, cada tradução de nome exigiria o _handshake_ de 3 vias do TCP (1 RTT) antes mesmo de enviar a pergunta DNS. A resolução DNS sem cache custaria no mínimo **$2 \times 4 = 8 \text{ RTTs}$**!
+    - Com **UDP**, o cliente envia o datagrama direto. A consulta custa apenas **1 RTT por salto**, tornando a navegação Web instantânea.
+- **Economia de Recursos:** Servidores DNS recebem bilhões de requisições. Usar UDP evita manter blocos de controle de conexão TCP (_Sockets_) em memória no servidor.
+
+##### 2. Uso do TCP (Porta 53) — Exceção / Transferência de Zona
+
+- **Fenômeno:** Quando a resposta DNS excede o tamanho máximo de um datagrama UDP padrão (**512 bytes**) ou quando dois servidores autoritativos sincronizam todo o seu banco de dados (**Transferência de Zona / _Zone Transfer_**).
+- **Por que mudar para TCP?** Transferir bancos de dados inteiros exige a garantia de entrega confiável, sem perdas, sem corrupção e com ordenação correta, justificando o uso do TCP.
+Vamos concluir o **Capítulo 2: Camada de Aplicação**, cobrindo as Seções **2.5 (Distribuição P2P)**, **2.6 (Streaming de Vídeo DASH e CDNs)** e **2.7 (Programação com Sockets)**.
+
+Sempre que a modelagem matemática e os exercícios de prova da UFRJ aprofundarem o texto do Kurose & Ross, unificaremos o conteúdo através da nossa cadeia analítica (**fenômeno de rede → conceito → modelo → matemática → cálculo → interpretação**).
+
+---
+## 2.5 Distribuição de Arquivos P2P e o Protocolo BitTorrent
+
+---
+
+### 1. O Fenômeno da Distribuição Massiva de Arquivos
+
+#### Fenômeno de Rede
+
+Quando uma empresa lança uma atualização de sistema operacional ou um vídeo em alta definição de **\(F\) bits** e **\(N\) usuários** tentam baixá-lo ao mesmo tempo, como a infraestrutura de rede responde?
+
+#### Conceito: Arquitetura Cliente-Servidor vs. P2P
+
+- **Na Arquitetura Cliente-Servidor:** O servidor é a única fonte geradora de bits. Conforme o número de clientes \(N\) cresce, a taxa de upload do servidor (\(u_s\)) torna-se um gargalo severo.
+- **Na Arquitetura Peer-to-Peer (P2P):** Os sistemas finais (**pares** ou _peers_) atuam simultaneamente como clientes (consumindo bits) e servidores (redistribuindo bits que já baixaram). O sistema possui **autoescalabilidade (_self-scalability_)**: cada novo par traz uma nova carga de consumo, mas também adiciona capacidade de upload ao sistema.
+
+---
+
+### 2. Unificação Matemática: Modelo do Tempo Mínimo de Distribuição (Kurose + UFRJ)
+
+Para comparar quantitativamente o tempo necessário para distribuir um arquivo de tamanho \(F\) para \(N\) clientes entre as duas arquiteturas, define-se o modelo sob as seguintes variáveis:
+
+- \(F\): Tamanho do arquivo a ser distribuído (em **bits**).
+- \(N\): Número de clientes/pares que desejam obter a cópia do arquivo.
+- \(u_s\): Taxa de upload do servidor de origem (em **bits/s**).
+- \(u_i\): Taxa de upload do \(i\)-ésimo par (em **bits/s**).
+- \(d_i\): Taxa de download do \(i\)-ésimo par (em **bits/s**).
+- \(d_{\text{min}} = \min{d_1, d_2, \dots, d_N}\): Taxa de download do par mais lento da rede.
+
+---
+
+#### Modelo Matemático 1: Tempo de Distribuição na Arquitetura Cliente-Servidor (\(D_{\text{CS}}\))
+
+##### 1. Dedução dos Limites Inferiores
+
+Nenhum par ajuda a redistribuir o arquivo. O tempo total é limitado por dois gargalos físicos:
+
+1. **Gargalo no Servidor:** O servidor precisa enviar \(N\) cópias completas de \(F\) bits, enviando um total de \(N \cdot F\) bits pela sua interface de upload \(u_s\). O tempo não pode ser menor que \(\frac{N \cdot F}{u_s}\).
+2. **Gargalo no Cliente Mais Lento:** O cliente com a menor taxa de download (\(d_{\text{min}}\)) leva no mínimo \(\frac{F}{d_{\text{min}}}\) para receber seus próprios \(F\) bits.
+
+##### 2. Aplicação da Fórmula
+
+\[D_{\text{CS}} = \max \left{ \frac{N \cdot F}{u_s}, ; \frac{F}{d_{\text{min}}} \right}\]
+
+##### 3. Interpretação em Termos de Redes
+
+Para valores grandes de \(N\), o tempo de distribuição é dominado pelo termo \(\frac{N \cdot F}{u_s}\). **O tempo cresce de forma estritamente linear com o número de usuários \(N\)**. Se o número de clientes aumentar 1000 vezes, o tempo para distribuir o arquivo também aumentará 1000 vezes!
+
+---
+
+#### Modelo Matemático 2: Tempo de Distribuição na Arquitetura P2P (\(D_{\text{P2P}}\))
+
+##### 1. Dedução dos Limites Inferiores
+
+No P2P, os pares redistribuem pedaços do arquivo entre si. O tempo total é limitado por três restrições físicas:
+
+1. **Envio Inicial do Servidor:** Para que o arquivo entre na comunidade, o servidor precisa injetar cada um dos \(F\) bits pelo menos uma vez no enlace. Tempo mínimo: \(\frac{F}{u_s}\).
+2. **Gargalo de Download no Cliente Lento:** O cliente mais lento ainda precisa baixar seus \(F\) bits. Tempo mínimo: \(\frac{F}{d_{\text{min}}}\).
+3. **Capacidade Agregada de Upload do Sistema:** A rede como um todo precisa entregar um total de \(N \cdot F\) bits para os \(N\) clientes. A taxa máxima de upload combinada de todo o sistema é a soma do upload do servidor com o upload de todos os \(N\) pares (\(u_{\text{total}} = u_s + \sum_{i=1}^N u_i\)). Tempo mínimo: \(\frac{N \cdot F}{u_s + \sum_{i=1}^N u_i}\).
+
+##### 2. Aplicação da Fórmula
+
+\[D_{\text{P2P}} = \max \left{ \frac{F}{u_s}, ; \frac{F}{d_{\text{min}}}, ; \frac{N \cdot F}{u_s + \sum_{i=1}^N u_i} \right}\]
+
+##### 3. Interpretação em Termos de Redes (Análise com Uploads Iguais \(u_i = u\))
+
+Se todos os pares tiverem a mesma taxa de upload \(u_i = u\), a capacidade total de upload torna-se \(u_s + N \cdot u\). O terceiro termo passa a ser:
+
+\[\frac{N \cdot F}{u_s + N \cdot u}\]
+
+Quando \(N \to \infty\), dividindo o numerador e o denominador por \(N\):
+
+\[\lim_{N \to \infty} \frac{N \cdot F}{u_s + N \cdot u} = \frac{F}{u}\]
+
+O tempo de distribuição P2P **não cresce indefinidamente com \(N\)**; ele atinge uma assíntota e fica limitado superiormente! O gráfico de \(D_{\text{P2P}}\) vs. \(N\) curva-se e estabiliza, demonstrando a **autoescalabilidade do P2P**.
+
+---
+
+### 3. O Protocolo BitTorrent: Mecanismos Práticos de Funcionamento
+
+O BitTorrent é o protocolo P2P de distribuição de arquivos mais popular do mundo.
+
+- **Torrent e Chunks:** A coleção de todos os pares compartilhando um arquivo é chamada de **torrent**. O arquivo é dividido em blocos idênticos chamados **chunks** (tipicamente de **256 KB**).
+- **Rastreador (_Tracker_):** Nó central de infraestrutura que mantém o registro de quais pares estão ativos no torrent. Quando um novo par (Alice) entra na rede, ela se registra no _tracker_ e recebe uma lista com o endereço IP de um subconjunto de pares (seus "vizinhos").
+- **Seleção de Chunks — O Mais Raro Primeiro (_Rarest First_):** Para decidir qual bloco pedir aos seus vizinhos, Alice determina quais blocos possuem o menor número de cópias disponíveis entre eles e **solicita os blocos mais raros primeiro**. Isso equaliza o número de cópias de cada bloco na rede e evita que um bloco desapareça se a fonte original sair.
+- **Algoritmo de Incentivo — _Tit-for-Tat_ (Olho por Olho):** Como evitar que usuários "caronas" (_freeriders_) apenas baixem arquivos sem enviar nada em troca?
+    1. Alice mede continuamente a taxa na qual recebe dados de cada vizinho.
+    2. Ela seleciona os **4 pares que lhe fornecem dados na maior taxa** e retribui enviando blocos para eles. Esses 4 pares são chamados de **desbloqueados (_unchoked_)**. A lista é recalculada a cada 10 segundos.
+    3. **Desbloqueio Otimista (_Optimistically Unchoked_):** A cada 30 segundos, Alice escolhe aleatoriamente **1 par adicional** (Bob) e envia blocos para ele. Se Bob retribuir com uma taxa alta, ele pode entrar na lista dos "Top 4" de Alice no ciclo seguinte. Isso permite que novos pares sem blocos consigam suas primeiras peças e que pares com altas capacidades de upload se encontrem.
+
+---
+
+## 2.6 Streaming de Vídeo e Redes de Distribuição de Conteúdo (CDNs)
+
+---
+
+### 2.6.1 O Desafio do Streaming de Vídeo e o Protocolo DASH
+
+#### Fenômeno de Rede
+
+O tráfego de vídeo (YouTube, Netflix, Prime Video) representa cerca de **80% de todo o tráfego da Internet**. Um vídeo pré-gravado é uma sequência de imagens exibidas a uma taxa fixa (ex: 24 ou 60 quadros/s). Como entregar vídeo contínuo para usuários com conexões oscilantes (ex: 4G/5G em movimento)?
+
+#### Conceito: DASH (_Dynamic Adaptive Streaming over HTTP_)
+
+No streaming tradicional por HTTP, o vídeo era baixado como um arquivo único. No **DASH**, o vídeo é codificado em **múltiplas versões de qualidade/bitrate** e dividido em trechos (_chunks_) de alguns segundos de duração (ex: 2 a 10 segundos).
+
+##### O Arquivo de Manifesto (_Manifest File_)
+
+O servidor HTTP fornece um **arquivo de manifesto** que lista as URLs e as taxas de bits de cada versão de qualidade do vídeo.
+
+1. O cliente baixa primeiramente o arquivo de manifesto.
+2. Em seguida, a aplicação cliente requisita um trecho de vídeo por vez via requisições `HTTP GET` especificando o intervalo de bytes.
+3. **Seleção Adaptativa de Taxa:** Conforme baixa os trechos, a aplicação cliente mede a largura de banda de recepção atual e monitora o nível de preenchimento do seu _buffer_ local. Se a rede acelerar, ela pede o próximo trecho em alta definição (4K); se o _buffer_ esvaziar ou a rede oscilar, ela alterna dinamicamente para uma versão de menor taxa de bits (720p/480p), evitando travamentos na exibição.
+
+---
+
+### 2.6.2 Redes de Distribuição de Conteúdo (_Content Distribution Networks - CDNs_)
+
+#### Fenômeno de Rede
+
+Se uma empresa de streaming mantiver um único _datacenter_ gigante com todos os seus vídeos, clientes distantes sofrerão com altos atrasos de propagação, travamentos em enlaces gargalo e o _datacenter_ será um ponto único de falha.
+
+#### Conceito
+
+Uma **CDN** é uma rede geograficamente distribuída de servidores _proxy_ que armazena cópias de vídeos e conteúdos em locais próximos aos usuários finais.
+
+##### Filosofias de Posicionamento de Servidores de CDN
+
+1. **Entrar Fundo (_Enter Deep_):** Instala pequenos _clusters_ de servidores profundamente **dentro das redes de acesso dos ISPs residenciais**.
+    - _Vantagem:_ Minimiza a latência e contorna os gargalos da Internet pública.
+    - _Desvantagem:_ Alta complexidade de manutenção e gerenciamento de milhares de _clusters_ espalhados.
+2. **Trazer para Perto (_Bring Home_):** Instala _clusters_ maiores em grandes **Pontos de Troca de Tráfego (IXPs)** interconectando ISPs de Nível 1/2.
+    - _Vantagem:_ Menor número de _clusters_ para manter.
+    - _Desvantagem:_ Resulta em latências ligeiramente maiores do que o modelo _Enter Deep_.
+
+##### Estratégias de Atualização de Conteúdo
+
+- **Caches sob Demanda (_Pull-Caching_):** Se um cliente pede um vídeo que não está no _cluster_ local da CDN, o servidor busca o vídeo no repositório central, armazena uma cópia e o entrega ao cliente (usado pelo Google/YouTube).
+- **Armazenamento Agendado (_Push-Caching_):** Conteúdos e filmes populares são enviados ativamente para os servidores da CDN em horários agendados fora do horário de pico (estratégia utilizada pela Netflix).
+
+---
+
+## 2.7 Programação com Sockets em Python: UDP vs. TCP
+
+Para encerrar o Capítulo 2, analisaremos como as aplicações interagem com os protocolos de transporte através da **Socket API**.
+
+---
+
+### 2.7.1 Sockets UDP em Python (Sem Conexão)
+
+#### Conceito
+
+No UDP, **não há fase de estabelecimento de conexão** (_handshake_). O remetente anexa explicitamente o endereço IP e a porta de destino a cada datagrama enviado.
+
+##### O Servidor UDP e o Número de Sockets (Questão de Prova)
+
+Um servidor UDP precisa de **apenas 1 único socket** para atender a qualquer número de clientes simultâneos! Como o UDP não mantém estado de conexão, todas as mensagens de todos os clientes entram pela mesma "porta" do socket do servidor, e o servidor identifica quem enviou examinando a tupla `(IP_cliente, Porta_cliente)` retornada pela primitiva de recepção.
+
+##### Código Prático UDP em Python
+
+```python
+# --- SERVIDIOR UDP (UDPServer.py) ---
+from socket import *
+
+serverPort = 12000
+# Cria o socket UDP (AF_INET = IPv4, SOCK_DGRAM = UDP)
+serverSocket = socket(AF_INET, SOCK_DGRAM)
+serverSocket.bind(('', serverPort))  # Associa o socket à porta 12000
+print("Servidor UDP pronto para receber...")
+
+while True:
+    message, clientAddress = serverSocket.recvfrom(2048)  # Recebe dados e endereço do cliente
+    modifiedMessage = message.decode().upper()
+    serverSocket.sendto(modifiedMessage.encode(), clientAddress)  # Responde ao cliente
+
+# --- CLIENTE UDP (UDPClient.py) ---
+from socket import *
+
+serverName = '127.0.0.1'  # IP do Servidor
+serverPort = 12000
+clientSocket = socket(AF_INET, SOCK_DGRAM)  # Cria socket UDP do cliente
+
+message = "mensagem de teste"
+clientSocket.sendto(message.encode(), (serverName, serverPort))  # Envia datagrama
+modifiedMessage, serverAddress = clientSocket.recvfrom(2048)  # Recebe resposta
+print("Resposta do Servidor:", modifiedMessage.decode())
+clientSocket.close()
+```
+
+---
+
+### 2.7.2 Sockets TCP em Python (Orientado à Conexão)
+
+#### Conceito
+
+No TCP, antes de trocar dados, cliente e servidor executam o _handshake_ de 3 vias. Uma vez estabelecida, a comunicação ocorre como um **fluxo contínuo de bytes (_byte-stream_)**.
+
+##### Por que o Servidor TCP precisa de 2 Tipos de Sockets? (Questão Chave de Prova)
+
+Diferente do UDP, um servidor TCP utiliza **dois tipos de sockets**:
+
+1. **Socket de Boas-Vindas (_Welcome Socket / Listening Socket_):** Fica associado à porta bem conhecida (ex: porta `12000`) escutando requisições de conexão de novos clientes (`listen()`).
+2. **Socket de Conexão (_Connection Socket_):** Quando um cliente inicia um _handshake_, a chamada `accept()` do servidor cria um **novo socket dedicado exclusivamente** para conversar com aquele cliente específico.
+
+- **Interpretação e Cálculo:** Se um servidor TCP estiver atendendo a **\(N\) clientes simultâneos**, ele manterá abertos exatamente **\(N + 1\) sockets** em memória (1 socket de boas-vindas escutando a porta principal + \(N\) sockets de conexão dedicados aos clientes ativos).
+
+##### Código Prático TCP em Python
+
+```python
+# --- SERVIDOR TCP (TCPServer.py) ---
+from socket import *
+
+serverPort = 12000
+# 1. Cria o Socket de Boas-Vindas (AF_INET = IPv4, SOCK_STREAM = TCP)
+welcomeSocket = socket(AF_INET, SOCK_STREAM)
+welcomeSocket.bind(('', serverPort))
+welcomeSocket.listen(1)  # Começa a escutar requisições TCP
+print("Servidor TCP escutando na porta 12000...")
+
+while True:
+    # 2. accept() bloqueia até chegar um cliente e CRIA o Socket de Conexão dedicado
+    connectionSocket, addr = welcomeSocket.accept()
+
+    sentence = connectionSocket.recv(1024).decode()
+    capitalizedSentence = sentence.upper()
+    connectionSocket.send(capitalizedSentence.encode())
+
+    connectionSocket.close()  # Fecha o socket de conexão do cliente atual
+
+# --- CLIENTE TCP (TCPClient.py) ---
+from socket import *
+
+serverName = '127.0.0.1'
+serverPort = 12000
+clientSocket = socket(AF_INET, SOCK_STREAM)
+
+# Inicia o Three-Way Handshake TCP com o servidor
+clientSocket.connect((serverName, serverPort))
+
+sentence = "mensagem de teste tcp"
+clientSocket.send(sentence.encode())  # Envia fluxo de bytes
+modifiedSentence = clientSocket.recv(1024).decode()
+print("Resposta do Servidor:", modifiedSentence)
+clientSocket.close()
+```
+
+---
+
+#### Tabela Resumo: Programação com Sockets UDP vs. TCP
+
+| Propriedade                                   | **Sockets UDP**                                                                 | **Sockets TCP**                                                                     |
+| :-------------------------------------------- | :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------- |
+| **Tipo de Socket Python**                     | `SOCK_DGRAM`                                                                    | `SOCK_STREAM`                                                                       |
+| **Estabelecimento de Conexão**                | Não há (`connect` opcional).                                                    | Obrigatório via `connect()` e `accept()`.                                           |
+| **Primitivas de E/S**                         | `sendto()` e `recvfrom()` (com endereçamento explícito).                        | `send()` e `recv()` (pelo canal já estabelecido).                                   |
+| **Abstração de Dados**                        | **Datagramas discretos** (preserva limites de mensagem).                        | **Fluxo contínuo de bytes** (_Byte-Stream_).                                        |
+| **Sockets no Servidor (para \(N\) clientes)** | **1 socket único** para todos os clientes.                                      | **\(N + 1\) sockets** (1 de boas-vindas + \(N\) de conexão).                        |
+| **Ordem de Execução dos Programas**           | O cliente pode enviar mensagens antes do servidor rodar (dados serão perdidos). | O programa servidor **precisa rodar antes** para abrir o socket e escutar na porta. |
+
