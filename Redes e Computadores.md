@@ -1243,72 +1243,76 @@ Sempre que a modelagem matemática e os exercícios de prova da UFRJ aprofundare
 
 #### Fenômeno de Rede
 
-Quando uma empresa lança uma atualização de sistema operacional ou um vídeo em alta definição de **\(F\) bits** e **\(N\) usuários** tentam baixá-lo ao mesmo tempo, como a infraestrutura de rede responde?
+Quando uma empresa lança uma atualização de sistema operacional ou um vídeo em alta definição de **$F$ bits** e **$N$ usuários** tentam baixá-lo ao mesmo tempo, como a infraestrutura de rede responde?
 
 #### Conceito: Arquitetura Cliente-Servidor vs. P2P
 
-- **Na Arquitetura Cliente-Servidor:** O servidor é a única fonte geradora de bits. Conforme o número de clientes \(N\) cresce, a taxa de upload do servidor (\(u_s\)) torna-se um gargalo severo.
+- **Na Arquitetura Cliente-Servidor:** O servidor é a única fonte geradora de bits. Conforme o número de clientes $N$ cresce, a taxa de upload do servidor ($u_s$) torna-se um gargalo severo.
 - **Na Arquitetura Peer-to-Peer (P2P):** Os sistemas finais (**pares** ou _peers_) atuam simultaneamente como clientes (consumindo bits) e servidores (redistribuindo bits que já baixaram). O sistema possui **autoescalabilidade (_self-scalability_)**: cada novo par traz uma nova carga de consumo, mas também adiciona capacidade de upload ao sistema.
 
 ---
 
 ### 2. Unificação Matemática: Modelo do Tempo Mínimo de Distribuição (Kurose + UFRJ)
 
-Para comparar quantitativamente o tempo necessário para distribuir um arquivo de tamanho \(F\) para \(N\) clientes entre as duas arquiteturas, define-se o modelo sob as seguintes variáveis:
+Para comparar quantitativamente o tempo necessário para distribuir um arquivo de tamanho $F$ para $N$ clientes entre as duas arquiteturas, define-se o modelo sob as seguintes variáveis:
 
-- \(F\): Tamanho do arquivo a ser distribuído (em **bits**).
-- \(N\): Número de clientes/pares que desejam obter a cópia do arquivo.
-- \(u_s\): Taxa de upload do servidor de origem (em **bits/s**).
-- \(u_i\): Taxa de upload do \(i\)-ésimo par (em **bits/s**).
-- \(d_i\): Taxa de download do \(i\)-ésimo par (em **bits/s**).
-- \(d_{\text{min}} = \min{d_1, d_2, \dots, d_N}\): Taxa de download do par mais lento da rede.
+- $F$: Tamanho do arquivo a ser distribuído (em **bits**).
+- $N$: Número de clientes/pares que desejam obter a cópia do arquivo.
+- $u_s$: Taxa de upload do servidor de origem (em **bits/s**).
+- $u_i$: Taxa de upload do $i$-ésimo par (em **bits/s**).
+- $d_i$: Taxa de download do $i$-ésimo par (em **bits/s**).
+- $d_{\text{min}} = \min{d_1, d_2, \dots, d_N}$: Taxa de download do par mais lento da rede.
 
 ---
 
-#### Modelo Matemático 1: Tempo de Distribuição na Arquitetura Cliente-Servidor (\(D_{\text{CS}}\))
+#### Modelo Matemático 1: Tempo de Distribuição na Arquitetura Cliente-Servidor ($D_{\text{CS}}$)
 
 ##### 1. Dedução dos Limites Inferiores
 
 Nenhum par ajuda a redistribuir o arquivo. O tempo total é limitado por dois gargalos físicos:
 
-1. **Gargalo no Servidor:** O servidor precisa enviar \(N\) cópias completas de \(F\) bits, enviando um total de \(N \cdot F\) bits pela sua interface de upload \(u_s\). O tempo não pode ser menor que \(\frac{N \cdot F}{u_s}\).
-2. **Gargalo no Cliente Mais Lento:** O cliente com a menor taxa de download (\(d_{\text{min}}\)) leva no mínimo \(\frac{F}{d_{\text{min}}}\) para receber seus próprios \(F\) bits.
+1. **Gargalo no Servidor:** O servidor precisa enviar $N$ cópias completas de $F$ bits, enviando um total de $N \cdot F$ bits pela sua interface de upload $u_s$. O tempo não pode ser menor que $\frac{N \cdot F}{u_s}$.
+2. **Gargalo no Cliente Mais Lento:** O cliente com a menor taxa de download ($d_{\text{min}}$) leva no mínimo $\frac{F}{d_{\text{min}}}$ para receber seus próprios $F$ bits.
 
 ##### 2. Aplicação da Fórmula
 
-\[D_{\text{CS}} = \max \left{ \frac{N \cdot F}{u_s}, ; \frac{F}{d_{\text{min}}} \right}\]
+$$D_{\text{CS}} = \max\left\{ \frac{N \cdot F}{u_s},\; \frac{F}{d_{\text{min}}} \right\}$$
 
 ##### 3. Interpretação em Termos de Redes
 
-Para valores grandes de \(N\), o tempo de distribuição é dominado pelo termo \(\frac{N \cdot F}{u_s}\). **O tempo cresce de forma estritamente linear com o número de usuários \(N\)**. Se o número de clientes aumentar 1000 vezes, o tempo para distribuir o arquivo também aumentará 1000 vezes!
+Para valores grandes de $N$, o tempo de distribuição é dominado pelo termo $\frac{N \cdot F}{u_s}$. **O tempo cresce de forma estritamente linear com o número de usuários $N$**. Se o número de clientes aumentar 1000 vezes, o tempo para distribuir o arquivo também aumentará 1000 vezes!
 
 ---
 
-#### Modelo Matemático 2: Tempo de Distribuição na Arquitetura P2P (\(D_{\text{P2P}}\))
+#### Modelo Matemático 2: Tempo de Distribuição na Arquitetura P2P ($D_{\text{P2P}}$)
 
 ##### 1. Dedução dos Limites Inferiores
 
 No P2P, os pares redistribuem pedaços do arquivo entre si. O tempo total é limitado por três restrições físicas:
 
-1. **Envio Inicial do Servidor:** Para que o arquivo entre na comunidade, o servidor precisa injetar cada um dos \(F\) bits pelo menos uma vez no enlace. Tempo mínimo: \(\frac{F}{u_s}\).
-2. **Gargalo de Download no Cliente Lento:** O cliente mais lento ainda precisa baixar seus \(F\) bits. Tempo mínimo: \(\frac{F}{d_{\text{min}}}\).
-3. **Capacidade Agregada de Upload do Sistema:** A rede como um todo precisa entregar um total de \(N \cdot F\) bits para os \(N\) clientes. A taxa máxima de upload combinada de todo o sistema é a soma do upload do servidor com o upload de todos os \(N\) pares (\(u_{\text{total}} = u_s + \sum_{i=1}^N u_i\)). Tempo mínimo: \(\frac{N \cdot F}{u_s + \sum_{i=1}^N u_i}\).
+1. **Envio Inicial do Servidor:** Para que o arquivo entre na comunidade, o servidor precisa injetar cada um dos $F$ bits pelo menos uma vez no enlace. Tempo mínimo: $\frac{F}{u_s}$.
+2. **Gargalo de Download no Cliente Lento:** O cliente mais lento ainda precisa baixar seus $F$ bits. Tempo mínimo: $\frac{F}{d_{\text{min}}}$.
+3. **Capacidade Agregada de Upload do Sistema:** A rede como um todo precisa entregar um total de $N \cdot F$ bits para os $N$ clientes. A taxa máxima de upload combinada de todo o sistema é a soma do upload do servidor com o upload de todos os $N$ pares ($u_{\text{total}} = u_s + \sum_{i=1}^N u_i$). Tempo mínimo: $\frac{N \cdot F}{u_s + \sum_{i=1}^N u_i}$.
 
 ##### 2. Aplicação da Fórmula
 
-\[D_{\text{P2P}} = \max \left{ \frac{F}{u_s}, ; \frac{F}{d_{\text{min}}}, ; \frac{N \cdot F}{u_s + \sum_{i=1}^N u_i} \right}\]
+$$D_{\text{P2P}} = \max\left\{
+\frac{F}{u_s},\;
+\frac{F}{d_{\text{min}}},\;
+\frac{N \cdot F}{u_s + \sum_{i=1}^{N} u_i}
+\right\}$$
 
-##### 3. Interpretação em Termos de Redes (Análise com Uploads Iguais \(u_i = u\))
+##### 3. Interpretação em Termos de Redes (Análise com Uploads Iguais $u_i = u$)
 
-Se todos os pares tiverem a mesma taxa de upload \(u_i = u\), a capacidade total de upload torna-se \(u_s + N \cdot u\). O terceiro termo passa a ser:
+Se todos os pares tiverem a mesma taxa de upload $u_i = u$, a capacidade total de upload torna-se $u_s + N \cdot u$. O terceiro termo passa a ser:
 
-\[\frac{N \cdot F}{u_s + N \cdot u}\]
+$$\frac{N \cdot F}{u_s + N \cdot u}$$
 
-Quando \(N \to \infty\), dividindo o numerador e o denominador por \(N\):
+Quando $N \to \infty$, dividindo o numerador e o denominador por $N$:
 
-\[\lim_{N \to \infty} \frac{N \cdot F}{u_s + N \cdot u} = \frac{F}{u}\]
+$$\lim_{N \to \infty} \frac{N \cdot F}{u_s + N \cdot u} = \frac{F}{u}$$
 
-O tempo de distribuição P2P **não cresce indefinidamente com \(N\)**; ele atinge uma assíntota e fica limitado superiormente! O gráfico de \(D_{\text{P2P}}\) vs. \(N\) curva-se e estabiliza, demonstrando a **autoescalabilidade do P2P**.
+O tempo de distribuição P2P **não cresce indefinidamente com $N$**; ele atinge uma assíntota e fica limitado superiormente! O gráfico de $D_{\text{P2P}}$ vs. $N$ curva-se e estabiliza, demonstrando a **autoescalabilidade do P2P**.
 
 ---
 
@@ -1438,7 +1442,7 @@ Diferente do UDP, um servidor TCP utiliza **dois tipos de sockets**:
 1. **Socket de Boas-Vindas (_Welcome Socket / Listening Socket_):** Fica associado à porta bem conhecida (ex: porta `12000`) escutando requisições de conexão de novos clientes (`listen()`).
 2. **Socket de Conexão (_Connection Socket_):** Quando um cliente inicia um _handshake_, a chamada `accept()` do servidor cria um **novo socket dedicado exclusivamente** para conversar com aquele cliente específico.
 
-- **Interpretação e Cálculo:** Se um servidor TCP estiver atendendo a **\(N\) clientes simultâneos**, ele manterá abertos exatamente **\(N + 1\) sockets** em memória (1 socket de boas-vindas escutando a porta principal + \(N\) sockets de conexão dedicados aos clientes ativos).
+- **Interpretação e Cálculo:** Se um servidor TCP estiver atendendo a **$N$ clientes simultâneos**, ele manterá abertos exatamente **$N + 1$ sockets** em memória (1 socket de boas-vindas escutando a porta principal + $N$ sockets de conexão dedicados aos clientes ativos).
 
 ##### Código Prático TCP em Python
 
@@ -1490,6 +1494,6 @@ clientSocket.close()
 | **Estabelecimento de Conexão**                | Não há (`connect` opcional).                                                    | Obrigatório via `connect()` e `accept()`.                                           |
 | **Primitivas de E/S**                         | `sendto()` e `recvfrom()` (com endereçamento explícito).                        | `send()` e `recv()` (pelo canal já estabelecido).                                   |
 | **Abstração de Dados**                        | **Datagramas discretos** (preserva limites de mensagem).                        | **Fluxo contínuo de bytes** (_Byte-Stream_).                                        |
-| **Sockets no Servidor (para \(N\) clientes)** | **1 socket único** para todos os clientes.                                      | **\(N + 1\) sockets** (1 de boas-vindas + \(N\) de conexão).                        |
+| **Sockets no Servidor (para $N$ clientes)** | **1 socket único** para todos os clientes.                                      | **$N + 1$ sockets** (1 de boas-vindas + $N$ de conexão).                        |
 | **Ordem de Execução dos Programas**           | O cliente pode enviar mensagens antes do servidor rodar (dados serão perdidos). | O programa servidor **precisa rodar antes** para abrir o socket e escutar na porta. |
 
