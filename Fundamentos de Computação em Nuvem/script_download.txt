@@ -1,0 +1,37 @@
+====================================================================
+		LINUX
+====================================================================
+curl 'https://emergingtalent.contentcontroller.com/vault/c005184c-548c-4089-8669-4f357f9b712a/r/courses/644fdb81-1821-4d33-919f-ca24febf360f/4/100-ACCLFO-20-PT-M01SG.pdf' \
+  -H 'accept: */*' \
+  -H 'accept-language: pt-BR,pt;q=0.9' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://emergingtalent.contentcontroller.com/ScormEngineInterface/defaultui/player/cmi5-au/1.0/html/cmi5-mediaFile.html?actor=%7B%22objectType%22%3A%22Agent%22%2C%22account%22%3A%7B%22homePage%22%3A%22https%3A%2F%2Femergingtalent.contentcontroller.com%22%2C%22name%22%3A%22912582fb8d20c2f7f4683bd1437e692d57e7faca414b031114e508e07f245d12%22%7D%2C%22name%22%3A%220815286c81c0a2b10ca38fcc85bb966b9dab29baeb5d2b1286adc5b831f443ed%20eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c%22%7D&activityId=https%3A%2F%2Femergingtalent.contentcontroller.com%2Fcmi5%2Flms-id%2Fb23d2b3181da00be1139750e7a066f35cb76b799%2F5c7febc9-e85a-4c1c-a48d-26c95c7d60d5&endpoint=https%3A%2F%2Femergingtalent.contentcontroller.com%2FScormEngineInterface%2FTCAPI%2Fe3dde401-3796-49f8-9a58-859cba2168f5%2F&fetch=https%3A%2F%2Femergingtalent.contentcontroller.com%2FScormEngineInterface%2Fcmi5Fetch.jsp%3Fsession%3D3e79381e-5417-40a5-81f7-aef490821416%26extCfg%3DAccountId%257C6%2521ContentVaultPath%257C%252Fvault%252Fc005184c-548c-4089-8669-4f357f9b712a%2521EngineTenantName%257Ce3dde401-3796-49f8-9a58-859cba2168f5%2521InjectPathMediaFile%257Ctrue%2521VersionRestart%257Ctrue&registration=47f9f3c5-ea48-475e-9103-ce3f77e6c6cf' \
+  -H 'sec-ch-ua: "Chromium";v="145", "Not:A-Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-storage-access: none' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
+  -o Modulo1.pdf
+
+====================================================================
+		WINDOWS
+====================================================================
+curl --url ^"https://emergingtalent.contentcontroller.com/vault/9ba1cab3-6b5a-413c-a7ef-5aad265d0c75/r/courses/80bf6798-ffda-473a-a228-147764e30535/2/100-ACCLFO-20-PT-M10SG.pdf^" ^
+  -H ^"accept: */*^" ^
+  -H ^"accept-language: pt-BR,pt;q=0.8^" ^
+  -b ^"CloudFront-Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vZW1lcmdpbmd0YWxlbnQuY29udGVudGNvbnRyb2xsZXIuY29tL3ZhdWx0LzliYTFjYWIzLTZiNWEtNDEzYy1hN2VmLTVhYWQyNjVkMGM3NS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk0MDc0OTg4fX19XX0_; CloudFront-Signature=RQGGLbx2fan18VTNwIzI5LSDwML1iWxjohY6TzU2I2crKu7DXSUjcySyqIlomqyF9hfC-2SV-CxbcxvY6hdUlGe-LNKoFcFQ9wrynVniZHZ~eFJ~GN8jEe7dtsS72H9QuEkhGmWpA7THYDzLPNUXYu2vvep5M3vT3Yl7XqrAdzkdqQ2D6Pf14XgO5ccnGwshaJSfiEQzVnsq37jG9m~LP8mLowJdkHZR-IZiHaB7bcuj0zAADkDT5PDRZxZ29QYA3LA11mMbyxersH6EQ4YFoHcHIyGA5CdYrqaPilSDzCqxBfYNWGmWkt~noIBrXYV9XdpkKv-AZwwhL4OZWmAm~g__; CloudFront-Key-Pair-Id=APKATDQNER5HKWGWSGWW^" ^
+  -H ^"priority: u=1, i^" ^
+  -H ^"referer: https://emergingtalent.contentcontroller.com/ScormEngineInterface/defaultui/player/cmi5-au/1.0/html/cmi5-mediaFile.html?actor=^%^7B^%^22objectType^%^22^%^3A^%^22Agent^%^22^%^2C^%^22account^%^22^%^3A^%^7B^%^22homePage^%^22^%^3A^%^22https^%^3A^%^2F^%^2Femergingtalent.contentcontroller.com^%^22^%^2C^%^22name^%^22^%^3A^%^22912582fb8d20c2f7f4683bd1437e692d57e7faca414b031114e508e07f245d12^%^22^%^7D^%^2C^%^22name^%^22^%^3A^%^220815286c81c0a2b10ca38fcc85bb966b9dab29baeb5d2b1286adc5b831f443ed^%^20eb045d78d273107348b0300c01d29b7552d622abbc6faf81b3ec55359aa9950c^%^22^%^7D^&activityId=https^%^3A^%^2F^%^2Femergingtalent.contentcontroller.com^%^2Fcmi5^%^2Flms-id^%^2Ff2ffe5aa0ed4771594cded27e8fbdeb2f3b1d321^%^2F6d9f667f-e358-46ea-b9ef-e9c4da3e1dec^&endpoint=https^%^3A^%^2F^%^2Femergingtalent.contentcontroller.com^%^2FScormEngineInterface^%^2FTCAPI^%^2Fe3dde401-3796-49f8-9a58-859cba2168f5^%^2F^&fetch=https^%^3A^%^2F^%^2Femergingtalent.contentcontroller.com^%^2FScormEngineInterface^%^2Fcmi5Fetch.jsp^%^3Fsession^%^3D797f54fc-00c5-4e11-a813-a8ec2c68f14e^%^26extCfg^%^3DAccountId^%^257C6^%^2521ContentVaultPath^%^257C^%^252Fvault^%^252F9ba1cab3-6b5a-413c-a7ef-5aad265d0c75^%^2521EngineTenantName^%^257Ce3dde401-3796-49f8-9a58-859cba2168f5^%^2521InjectPathMediaFile^%^257Ctrue^&registration=2cefd90f-1eb2-414b-aa57-a53ba42f1e1c^" ^
+  -H ^"sec-ch-ua: ^\^"Not-A.Brand^\^";v=^\^"99^\^", ^\^"Brave^\^";v=^\^"157^\^", ^\^"Chromium^\^";v=^\^"157^\^"^" ^
+  -H ^"sec-ch-ua-mobile: ?0^" ^
+  -H ^"sec-ch-ua-platform: ^\^"Windows^\^"^" ^
+  -H ^"sec-fetch-dest: empty^" ^
+  -H ^"sec-fetch-mode: cors^" ^
+  -H ^"sec-fetch-site: same-origin^" ^
+  -H ^"sec-gpc: 1^" ^
+  -H ^"user-agent: Mozilla/5.0 ^(Windows NT 10.0; Win64; x64^) AppleWebKit/537.36 ^(KHTML, like Gecko^) Chrome/157.0.0.0 Safari/537.36^" ^
+  -o Modulo10.pdf
+
