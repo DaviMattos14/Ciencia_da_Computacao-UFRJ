@@ -42,3 +42,17 @@ $$N > \frac{0{,}98 \cdot (RTT + d_{trans})}{d_{trans}} = \frac{0{,}98 \cdot 30{,
 
 Como $N$ representa um número inteiro de pacotes:
 $$N \ge 2.451\text{ pacotes}$$
+
+## P23
+
+**Variante 2**: GBN Padrão ($N_{rcv} = 1$)
+
+- **Janela do Receptor:** Tamanho $1$ (só aceita o pacote exatamente em ordem `expectedseqnum`).
+
+- **Pior Cenário:** O emissor envia os pacotes $0, 1, \dots, N-1$. O receptor recebe todos e avança seu `expectedseqnum` para $N \bmod k$. Porém, todos os ACKs são perdidos.
+
+- **Conclusão:** O emissor faz _timeout_ e retransmite a partir do pacote $0$. O receptor está esperando o pacote $N \bmod k$. Para que o receptor não confunda a retransmissão do pacote $0$ com o novo pacote esperado, o número de sequência $N \bmod k$ não pode coincidir com $0$.
+
+- **Resultado:** **$N \le k - 1$** (ou seja, $k \ge N + 1$).
+
+**Variante 3**: Selective Repeat (SR)
