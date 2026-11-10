@@ -32,5 +32,13 @@ Isso viola exatamente o que o RDT promete: sem duplicação, sem perda, em ordem
 ## P15
 - **$RTT$ (Round-Trip Time / Tempo de ida e volta):** $30\text{ ms} = 0{,}030\text{ s}$
 - **$R$ (Taxa de transmissão do enlace):** $1\text{ Gbps} = 10^9\text{ bits/s}$
-- **$L$ (Tamanho do pacote neste exercício):** $1.500\text{ bytes}$
+- **$L$ (Tamanho do pacote neste exercício):** $1.500\text{ bytes} = 1.500 \times 8\text{ bits} = 12.000\text{ bits}$
+$$d_{trans} = \frac{L}{R} = \frac{12.000}{10^9} = 1{,}2 \times 10^{-5}\text{ s} = 0{,}012\text{ ms}$$
+$$U_{sender} = \frac{d_{trans}}{RTT + d_{trans}} = \frac{0{,}012\text{ ms}}{30\text{ ms} + 0{,}012\text{ ms}} = \frac{0{,}012}{30{,}012} \approx 0{,}00039984 \approx 4 \times 14^{-4}$$
 
+Queremos que $U_{sender} > 0{,}98$:
+$$\frac{N \cdot d_{trans}}{RTT + d_{trans}} > 0{,}98$$
+$$N > \frac{0{,}98 \cdot (RTT + d_{trans})}{d_{trans}} = \frac{0{,}98 \cdot 30{,}012}{0{,}012} = 0{,}98 \cdot 2.501 = 2.450{,}98$$
+
+Como $N$ representa um número inteiro de pacotes:
+$$N \ge 2.451\text{ pacotes}$$
