@@ -45,14 +45,25 @@ $$N \ge 2.451\text{ pacotes}$$
 
 ## P23
 
-**Variante 2**: GBN Padrão ($N_{rcv} = 1$)
+**Variante 1**: GBN em que o receptor aceita/armazena pacotes fora de ordem
 
-- **Janela do Receptor:** Tamanho $1$ (só aceita o pacote exatamente em ordem `expectedseqnum`).
+- **Lógica:** Se o receptor for modificado para aceitar e armazenar pacotes fora de ordem, a janela de recepção deixa de ser unitária ($N_{rcv} = 1$) e passa a ser de tamanho $N_{rcv} = N$.
 
-- **Pior Cenário:** O emissor envia os pacotes $0, 1, \dots, N-1$. O receptor recebe todos e avança seu `expectedseqnum` para $N \bmod k$. Porém, todos os ACKs são perdidos.
+- **Condição de não ambiguidade:** Para evitar que a nova janela do receptor se sobreponha a retransmissões da janela antiga do emissor (caso todos os ACKs se percam), a soma dos tamanhos das janelas do emissor e do receptor não pode exceder o espaço total $k$ ($N_{send} + N_{rcv} \le k$).
 
-- **Conclusão:** O emissor faz _timeout_ e retransmite a partir do pacote $0$. O receptor está esperando o pacote $N \bmod k$. Para que o receptor não confunda a retransmissão do pacote $0$ com o novo pacote esperado, o número de sequência $N \bmod k$ não pode coincidir com $0$.
+- **Resultado:** $N + N \le k \implies 2N \le k \implies \mathbf{N \le \lfloor k / 2 \rfloor}$.
 
-- **Resultado:** **$N \le k - 1$** (ou seja, $k \ge N + 1$).
+**Variante 2**: GBN Padrão (Receptor só aceita pacotes rigorosamente em ordem)
+- **Lógica:** O receptor possui janela unitária ($N_{rcv} = 1$), aceitando apenas o pacote de valor exato `expectedseqnum`.
+
+- **Condição de não ambiguidade:** Se o emissor transmitir $N$ pacotes e todos os ACKs forem perdidos, o emissor retransmitirá o pacote $0$. O receptor, por sua vez, estará aguardando o pacote $N \bmod k$. Para que o receptor não confunda a retransmissão do pacote $0$ com um novo pacote esperado, precisamos que $N \bmod k \neq 0$.
+
+- **Resultado:** $N_{send} + N_{rcv} \le k \implies N + 1 \le k \implies \mathbf{N \le k - 1}$.
 
 **Variante 3**: Selective Repeat (SR)
+- **Lógica:** Ambos os lados mantêm janelas de tamanho $N$ ($N_{send} = N$ e $N_{rcv} = N$).
+
+- **Condição de não ambiguidade:** No pior cenário de perda total de ACKs, a janela do receptor avança $N$ posições enquanto a do emissor permanece parada. Para garantir que a faixa de números de sequência esperada pelo receptor não se sobreponha à faixa retransmitida pelo emissor, as duas janelas somadas devem ser menores ou iguais ao tamanho total do espaço $k$.
+
+- **Resultado:** $N_{send} + N_{rcv} \le k \implies 2N \le k \implies \mathbf{N \le \lfloor k / 2 \rfloor}$.
+
