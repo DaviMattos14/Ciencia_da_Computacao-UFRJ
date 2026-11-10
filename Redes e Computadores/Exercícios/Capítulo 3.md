@@ -287,3 +287,65 @@ As oscilações do TCP CUBIC se tornam mais frequentes no tempo do que as do TCP
 Quando a capacidade da rede aumenta, o TCP CUBIC aproveita a nova largura de banda disponível **muito mais rápido** do que o TCP Reno. Enquanto o Reno sofre para subir lentamente de forma linear, a fase de sondagem convexa do CUBIC dispara para encontrar a nova capacidade.
 
 ## Exercício 1
+
+a)  RTT não é um valor fixo, ele é impactado por perdas, atrasos e distância física, o que permite RTT assumir valores aleatórios a cada novo cenário. Como a distância física é algo conhecido e a taxa do enlace também é conhecido, o que podemos modelar são os atrasos de fila, que por sua vez é uma variável aleatória, uma vez que sabemos que o mesmo pode assumir valores dentro de um intervalo conhecido.
+
+b) O valor observável $x_i$  é uma constante simplesmente porque é uma amostra já realizada e registrada no passado. Depois que o pacote foi enviado, o ACK retornou e o cronômetro registrou o valor , aquele número tornou-se um fato histórico fixo. Não existe mais incerteza sobre um dado que já foi medido. 
+
+c) Uma estatística pode ser dividida em duas vertentes:
+	- Descritiva: cujo o foco é descrever um conjunto de dados
+	- Inferencial: que utiliza de amostras para tirar conclusões, ou fazer previsões de uma população
+	Porém sempre com o objetivo de representar/modelar algo. Portanto, uma estatística é qualquer função calculada a partir dos dados da amostra.
+
+d)  O estimador é a fórmula ou a variável aleatória (como a média amostral )
+
+e) Pois o mesmo representa uma função calculada a partir de uma variavel aleatória (X_i) que pode assumir valores de uma amostra
+
+f) Se tomarmos a esperança de $\hat{\mu}$, temos $E[\hat{\mu}] = \mu$. Em termos simples, em média, a fórmula acerta a média real da rede. As variações individuais do RTT (causadas por um pacote pegar uma fila um pouco maior ou menor nos roteadores) têm desvios positivos e negativos em relação ao valor típico. Ao somar e dividir por $N+1$, essas flutuações aleatórias tendem a se "cancelar", fazendo com que $\hat{\mu}$ se aproxime do valor médio real do RTT da conexão.
+
+g) $\text{EstimatedMeanRTT}_n$ -> Variável Aleatória, pois a fórmula depende de X_i que por sua vez é uma v.a.
+$\alpha$ -> Constante, pois é um parâmetro fixo escolhido pelo protocolo
+$\text{EstimatedMeanRTT}_{n-1}$ ->  Constante, pois é uma amostra já registrada
+$X_n$ -> Variável Aleatória, pois pode assumir qualquer valor de espaço amostral, é uma medição que ainda vai acontecer.
+
+h) Pois utiliza dados de uma amostra ($X_i$) e tem como objetivo estimar uma média. $\text{EstimatedMeanRTT}_n$ pode ser escrita como uma combinação ponderada de todas as amostras passadas $X_0, X_1, \dots, X_n$. Como ela é uma função matemática puramente calculada a partir das amostras $g(X_0, \dots, X_n)$, sem depender de parâmetros populacionais desconhecidos, ela cumpre rigorosamente a definição de estatística.
+
+i) $\alpha$ serve para controlar a sensibilidade (ou "memória") da média móvel, dar muito peso à amostra mais recente e pouca importância ao histórico prévio (alpha grande), ou dar pouco peso à nova amostra e preserva bastante o histórico prévio (alpha pequeno)
+
+j) EWMA, pois na média aritmética simples todas as amostras tem o mesmo peso independentemente se é mais antiga ou mais nova, enquanto no EWMA dependendo do valor de alpha, as amostras recentes podem ter mais peso que as antigas.
+
+k) 
+$$\begin{matrix}
+\text{EstimatedMeanRTT}_n = (1-\alpha)\text{EstimatedMeanRTT}_{n-1} + \alpha X_n \\
+\text{EstimatedMeanRTT}_n = (1-0,125)\cdot100 + 0,125 \cdot 140 \\
+\text{EstimatedMeanRTT}_n = 0,875\cdot 100 + 0,125 \cdot 140 \\
+\text{EstimatedMeanRTT}_n = 87,5 + 17,5 = 105 \\
+\text{EstimatedMeanRTT}_n = 105ms
+
+\end{matrix}$$
+l) 
+$$
+\begin{matrix}
+\text{EstimatedMeanRTT}_n = (1-\alpha)\text{EstimatedMeanRTT}_{n-1} + \alpha X_n \\
+\text{EstimatedMeanRTT}_n = (1-0,5)\cdot100 + 0,5 \cdot 140 \\\text{EstimatedMeanRTT}_n = 50 + 70 = 120ms \\
+\end{matrix}
+$$
+A estimativa com $\alpha=0,5$ reage mais rapidamente pois da mais peso a amostra nova, ficando mais próxima.
+
+m) A média aritmética simples considera todas as amostras com o mesmo peso, inclusive as antigas. Se o RTT muda, essas amostras antigas podem tornar a estimativa lenta para acompanhar a condição atual. A EWMA dá mais peso às medições recentes.
+
+n) EstimatedMeanRTT pode ser interpretada como um estimador porque é calculada a partir das medições de RTT e usada para aproximar a média real, que é desconhecida.
+
+o) X representa o RTT de um segmento futuro: antes de acontecer, é aleatório. Já  EstimatedMeanRTT  e  DevRTT , depois de calculados a partir das medições disponíveis, são valores conhecidos e podem ser tratados como constantes. Assumir que  $E(X)=EstimatedMeanRTT$  e  $\sigma(X)=DevRTT$  é uma aproximação razoável: as estimativas resumem o comportamento recente do RTT, embora o RTT futuro possa diferir delas, especialmente se as condições da rede mudarem.
+
+## Exercício 2
+
+**(a)** X é uma variável aleatória, pois representa o RTT futuro, ainda desconhecido. Já $\mu=EstimatedMeanRTT$, $d=DevRTT$ e $T=\mu+4d$ são tratados como constantes, pois as estimativas já foram calculadas.
+
+**(b)** O evento X>T significa que o RTT do pacote será maior que o timeout configurado.
+
+**(c)** X mede o tempo entre o envio do segmento e o recebimento do ACK. Portanto, X>T indica que o ACK demorou mais do que o TCP esperava antes de considerar uma retransmissão.
+
+**(d)** Se T for muito pequeno, RTTs que apenas variam ou ficam temporariamente mais longos podem ultrapassá-lo. O TCP pode então retransmitir um segmento mesmo que ele não tenha sido perdido, causando uma retransmissão desnecessária.
+
+**(e)** Se T for muito grande, o TCP demorará para reagir quando houver uma perda real. Isso atrasa a retransmissão e pode reduzir o desempenho da conexão.
