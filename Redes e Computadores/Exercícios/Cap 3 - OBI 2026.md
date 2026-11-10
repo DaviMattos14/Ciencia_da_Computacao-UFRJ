@@ -8,6 +8,7 @@ Tempo: 2 + 5 + 5 + 1 + 1 + 2 = 16 minutos (C)
 
 #### Questão 9
 O tempo é o maior entre a distância de 0 até P e a de 9 até P. Escolhemos o P que tem o menor desses máximos.
+tempo(P) = maior entre (dist. de 0 até P) e (dist. de 9 até P)
 
 | Ponto | Dist. de 0 | dist. de 9 | Maior dos dois |
 | ----- | ---------- | ---------- | -------------- |
@@ -20,15 +21,13 @@ O tempo é o maior entre a distância de 0 até P e a de 9 até P. Escolhemos o 
 Resposta: (D) 6.
 
 #### Questão 10
-
-Agora a pergunta é: para cada candidato, qual é o ponto mais **distante** dele? Depois escolhemos o candidato cujo "mais distante" seja o menos distante possível. Aplicando o método a partir de cada candidato:
+menor “maior distância”.
 
 | Candidato | Ponto mais distante | Distância |
 | --------- | ------------------- | --------- |
-| 1         | 9                   | 12        |
-| 2         | 9                   | 14        |
-| 4         | 9                   | 13        |
-| 5         | 8                   | 12        |
-| 7         | 6                   | **10**    |
-
-Por exemplo, a partir do 7: o 1 está a 5, o 8 a 5, o 9 a 7 (7 → 8 → 9), o 4 a 6, o 2 a 7, o 0 a 9, o 3 a 9, o 5 a 9 e o 6 a 10 (7 → 1 → 4 → 5 → 6). O maior é 10. **Resposta: (E) 7.**
+| 1 (A)     | 9                   | 12        |
+| 2 (B)     | 9                   | 14        |
+| 4 (C)     | 9                   | 13        |
+| 5 (D)     | 8                   | 12        |
+| 7 (E)     | 6                   | **10**    |
+Resposta: (E) 7.
