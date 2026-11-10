@@ -349,3 +349,64 @@ o) X representa o RTT de um segmento futuro: antes de acontecer, é aleatório. 
 **(d)** Se T for muito pequeno, RTTs que apenas variam ou ficam temporariamente mais longos podem ultrapassá-lo. O TCP pode então retransmitir um segmento mesmo que ele não tenha sido perdido, causando uma retransmissão desnecessária.
 
 **(e)** Se T for muito grande, o TCP demorará para reagir quando houver uma perda real. Isso atrasa a retransmissão e pode reduzir o desempenho da conexão.
+
+## Exercício 3
+
+A desigualdade de Markov diz que, para $X\geq 0$ e $a>0$,
+
+$$ P(X\geq a)\leq\frac{E[X]}{a}. $$
+
+Como $E[X]=100\text{ ms}$:
+
+**(a)** Para a=200\text{ ms}:
+
+$$ P(X\geq 200)\leq\frac{100}{200}=0{,}5. $$
+
+Logo, o limite superior é **0,5 (50%)**.
+
+**(b)** Isso garante que a probabilidade de o RTT ser pelo menos 200 ms não passa de 50%. É um limite, não uma previsão de que a probabilidade seja exatamente 50%.
+
+**(c)** Para timeout $T=180\text{ ms}$:
+
+$$ P(X\geq 180)\leq\frac{100}{180}\approx0{,}556. $$
+
+O limite superior é aproximadamente **55,6%**.
+
+**(d)** O limite pode ser grosseiro porque Markov usa apenas a média, não levando em conta a variabilidade  da rede. Ele não considera como os valores de RTT estão distribuídos nem quanto variam, muitas distribuições diferentes com média de 100 ms podem ter probabilidades bem distintas de ultrapassar um limiar.
+
+**(e)** Uma desigualdade que também considera a variabilidade pode dar um limite mais informativo sobre a chance de RTTs distantes da média. Isso ajuda a avaliar melhor a probabilidade de um RTT ultrapassar o timeout.
+
+## Exercício 4
+
+**(a)** O quadrado de qualquer número é não negativo, $Z\geq 0$.
+
+**(b)** Pela desigualdade de Markov, para $a>0$:
+
+$$ P(Z\geq a)\leq\frac{E[Z]}{a}. $$
+
+**(c)** Escolhendo $a=k^2\sigma^2$, obtemos:
+
+$$ P\big((X-\mu)^2\geq k^2\sigma^2\big) \leq \frac{E[(X-\mu)^2]}{k^2\sigma^2}. $$
+
+**(d)** Pela definição da variância,
+
+$$ E[(X-\mu)^2]=\sigma^2. $$
+
+Então:
+
+$$ P\big((X-\mu)^2\geq k^2\sigma^2\big) \leq \frac{\sigma^2}{k^2\sigma^2} =\frac{1}{k^2}. $$
+
+**(e)** Como $k>0$, a condição $(X-\mu)^2\geq k^2\sigma^2$ equivale a $|X-\mu|\geq k\sigma$. Portanto:
+
+(f)
+$$ \boxed{P(|X-\mu|\geq k\sigma)\leq\frac{1}{k^2}}. $$
+
+Essa é a desigualdade de Chebyshev. Ela limita a probabilidade de $X$ ficar a pelo menos $k$ desvios padrão da média.
+
+**(g)** Para $k=4$:
+
+$$ \boxed{P(|X-\mu|\geq4\sigma)\leq\frac{1}{4^2}=\frac{1}{16}=0{,}0625}. $$
+
+Assim, a probabilidade de o RTT se afastar da média por pelo menos quatro desvios padrão é, no máximo, **6,25%**.
+
+**(h)** A associação com o timeout do TCP é uma motivação simplificada para o fator \(4\). Na fórmula real, as estimativas de média e variação são atualizadas ao longo do tempo; além disso, perdas e mudanças nas condições da rede também influenciam o comportamento observado.
