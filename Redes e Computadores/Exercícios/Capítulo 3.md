@@ -410,3 +410,6 @@ $$ \boxed{P(|X-\mu|\geq4\sigma)\leq\frac{1}{4^2}=\frac{1}{16}=0{,}0625}. $$
 Assim, a probabilidade de o RTT se afastar da média por pelo menos quatro desvios padrão é, no máximo, **6,25%**.
 
 **(h)** A associação com o timeout do TCP é uma motivação simplificada para o fator \(4\). Na fórmula real, as estimativas de média e variação são atualizadas ao longo do tempo; além disso, perdas e mudanças nas condições da rede também influenciam o comportamento observado.
+
+## Exercício 5
+
