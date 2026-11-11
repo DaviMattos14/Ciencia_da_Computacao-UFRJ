@@ -435,4 +435,46 @@ P(X\geq\mu+4\sigma)
 \leq\frac{1}{4^2}
 
 =\boxed{\frac{1}{16}}$$
-e)
+e) Pela desigualdade unilateral, a probabilidade de um $RTT$ futuro ultrapassar a média em 4 desvios padrão ($\mu + 4\sigma$) é de **no máximo $6{,}25\%$**. Ou seja, $6{,}25\%$ é o limite superior para a ocorrência de um timeout prematuro sob qualquer distribuição de probabilidade.
+
+f) Como $\sigma$ representa a dispersão em relação à média, o TCP adota `DevRTT` como sua medida prática de variabilidade. Multiplicar por **4** garante de forma bastante conservadora que, mesmo no pior cenário estatístico, pelo menos $93{,}75\%$ dos pacotes sem perda chegarão antes do estouro do temporizador, minimizando retransmissões desnecessárias.
+## Exercício 6
+
+Na fórmula prática do TCP, a estimativa do desvio absoluto é atualizada via EWMA:
+
+  
+
+$$\text{DevRTT} = (1 - \beta) \cdot \text{DevRTT} + \beta \cdot \vert{}\text{SampleRTT} - \text{EstimatedRTT}\vert{} \quad (\beta = 0{,}25)$$
+
+  
+
+Já a Desigualdade de Chebyshev usa o desvio padrão estatístico $\sigma$, onde $\sigma^2 = \mathbb{E}[(X - \mu)^2]$.
+
+  
+
+Vamos resolver o **Exercício 6**:
+
+  
+
+- **(a)** Qual é a diferença matemática e computacional entre usar **módulo** ($\vert{}X - \mu\vert{}$) e usar **quadrado** ($(X - \mu)^2$) para medir a dispersão de um conjunto de dados? _(Dica: pense no peso dado a desvios muito grandes e no custo de calcular raiz quadrada em processadores de rede)_.
+    
+      
+    
+- **(b)** Por que `DevRTT` **não** é exatamente o mesmo objeto matemático que o desvio padrão $\sigma$?
+    
+      
+    
+- **(c)** Apesar disso, por que `DevRTT` serve como uma excelente aproximação prática da variabilidade do RTT no TCP?
+    
+      
+    
+- **(d)** Complete as duas lacunas da frase do PDF:
+    
+      
+    
+    > _"A desigualdade de Chebyshev justifica a ideia de usar 'média mais algumas medidas de dispersão'. No TCP, DevRTT atua como uma medida prática de **`[LACUNA 1]`** do RTT, mesmo não sendo exatamente o **`[LACUNA 2]`** usado na fórmula de Chebyshev."_
+    > 
+    >   
+    
+
+Como você responde a esses quatro pontos do Exercício 6?
