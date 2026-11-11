@@ -413,3 +413,26 @@ Assim, a probabilidade de o RTT se afastar da média por pelo menos quatro desvi
 
 ## Exercício 5
 
+a) subatraindo $\mu$ de ambos os lados temos que $X - \mu >= k\sigma$
+Como $k\sigma > 0$, logo implica que $X-\mu$ é ao menos $k\sigma$, portanto $|X-\mu| >= k\sigma$
+
+b) se tomarmos, $\mu = 10$, $\sigma = 1$, $k = 2$
+$X>= 10 + 2 \cdot 1$, $X > = 12$
+$|X - 10| >= 2$ (A) e $X>= 10 + 2$ (B)
+
+Com $X = 5$, $5 >= 2$ (V), porém $5 >= 12$ (F)
+Portanto, B está contido em A
+
+
+c) pela inclusão de eventos podemos tomar ${X ≥ µ + kσ} \subseteq {|X − µ| ≥ kσ}$, logo, $$P(X\ge \mu+k\sigma)\le \frac{1}{k^2}$$, pois como um evento está contido em outro, sua probabilidade não pode ser maior.
+
+  
+
+d) Para \(k=4\):
+$$
+P(X\geq\mu+4\sigma)
+
+\leq\frac{1}{4^2}
+
+=\boxed{\frac{1}{16}}$$
+e)
