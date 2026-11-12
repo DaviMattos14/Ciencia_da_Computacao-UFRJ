@@ -1,3 +1,4 @@
+> **Nome**: Davi dos Santos Mattos            **DRE**: 119133049
 ## P6
 
 Suponha emissor em “esperar chamada 0” e receptor em “esperar 0”. O emissor envia o pacote 0, que chega intacto. O receptor entrega o dado, envia ACK e vai para “esperar 1”. O ACK é corrompido. O emissor, ao receber um ACK corrompido, retransmite o pacote 0. O receptor, em “esperar 1”, recebe um pacote intacto com SN 0 e, pela Fig. 3.60, responde NAK. O emissor recebe o NAK e retransmite o pacote 0, e o ciclo se repete indefinidamente. O emissor espera um ACK válido que nunca virá, e o receptor espera o pacote 1, que o emissor só enviará após receber esse ACK. Gerando um deadlock.
@@ -91,12 +92,12 @@ b)
 
 c) Detecção da perda após a 16ª rodada
 
-- **Causa:** **3 ACKs duplicados (_Fast Retransmit_)**.
+- **Causa:** **3 ACKs duplicados (_Fast Retransmit_).
 - **Justificativa:** A janela de congestionamento na rodada 17 reduz-se para 24 MSS (que corresponde a $\text{ssthresh} + 3 = 21 + 3$) em vez de descer para 1 MSS. Esse comportamento de corte pela metade é exclusivo da recepção de 3 ACKs duplicados no TCP Reno.
 
 d) Detecção da perda após a 22ª rodada
 
-- **Causa:** **Timeout (_Esgotamento de Temporização_)**. Na rodada 23, a `cwnd` despenca diretamente para 1 MSS, o que caracteriza a reação da FSM diante da expiração do temporizador de retransmissão.
+- **Causa:** **Timeout (_Esgotamento de Temporização_). Na rodada 23, a `cwnd` despenca diretamente para 1 MSS, o que caracteriza a reação da FSM diante da expiração do temporizador de retransmissão.
 - 
 e) Valor de `ssthresh` na 1ª rodada
 A fase de Partida Lenta termina na rodada 6 quando `cwnd` atinge 32 MSS e a curva passa de exponencial para linear. Como a transição de estado ocorre no instante em que $\text{cwnd} \ge \text{ssthresh}$, infere-se que o valor inicial de `ssthresh` era 32 MSS.
@@ -138,7 +139,7 @@ j)
     
 k) 
 
-|**Rodada (RTT)**|**cwnd (MSS)**|**ssthresh (MSS)**|**Estado na FSM do TCP**|**Evento / Observação**|
+|**Rodada (RTT)|**cwnd (MSS)|**ssthresh (MSS)|**Estado na FSM do TCP**|**Evento / Observação**|
 |---|---|---|---|---|
 |**1**|1|32|_Slow Start_|Início da conexão|
 |**2**|2|32|_Slow Start_|Crescimento exponencial|
@@ -208,7 +209,7 @@ $$\frac{0{,}75 W_{\max}}{2} = \mathbf{0{,}375 W_{\max}}$$
 
 | **Fase / Evento**                 | **TCP Reno**                                                  | **TCP CUBIC**                                                 |
 | --------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------- |
-| **Taxa em $t_3$ (pós-perda)**     | $0{,}5 W_{\max}$                                              | $0{,}5 W_{\max}$                                              |
+| **Taxa em $t_3$ (pós-perda)     | $0{,}5 W_{\max}$                                              | $0{,}5 W_{\max}$                                              |
 | **Padrão de Crescimento**         | Linear / Aditivo                                              | Cúbico (rápido no início)                                     |
 | **Momento da 1ª Perda pós-$t_3$** | Atinge $0{,}75 W_{\max}$ **mais tarde** ($t_4^{\text{Reno}}$) | Atinge $0{,}75 W_{\max}$ **mais cedo** ($t_4^{\text{CUBIC}}$) |
 | **Taxa mínima após 1ª Perda**     | $0{,}375 W_{\max}$                                            | $0{,}375 W_{\max}$                                            |
@@ -242,7 +243,7 @@ As oscilações do TCP CUBIC se tornam mais frequentes no tempo do que as do TCP
     
     - Primeiramente, ele sobe rápido e desacelera (achata) ao redor de $W_{\max}$.
         
-    - Como não ocorre perda ao atingir $W_{\max}$ (já que o novo teto é $1{,}5 W_{\max}$), o CUBIC entra no seu **modo de sondagem (_probing mode_)**.
+    - Como não ocorre perda ao atingir $W_{\max}$ (já que o novo teto é $1{,}5 W_{\max}$), o CUBIC entra no seu **modo de sondagem (_probing mode_).
         
     - À medida que $t > K$, a função cúbica $C(t-K)^3$ passa a crescer **extremamente rápido** (curva convexa acentuada) para buscar nova largura de banda.
         
@@ -279,9 +280,9 @@ As oscilações do TCP CUBIC se tornam mais frequentes no tempo do que as do TCP
 | ------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- |
 | **Ponto de partida em $t_3$**              | $0{,}5 W_{\max}$                                | $0{,}5 W_{\max}$                                      |
 | **Comportamento após passar $W_{\max}$**   | Mantém inclinação linear constante (+1 MSS/RTT) | Acelera vertiginosamente (crescimento cúbico convexo) |
-| **Momento da 1ª perda ($1{,}5 W_{\max}$)** | Demora muito tempo ($t_4^{\text{Reno}}$)        | Atinge muito mais rapidamente ($t_4^{\text{CUBIC}}$)  |
+| **Momento da 1ª perda ($1{,}5 W_{\max}$) | Demora muito tempo ($t_4^{\text{Reno}}$)        | Atinge muito mais rapidamente ($t_4^{\text{CUBIC}}$)  |
 | **Recuo pós-1ª perda**                     | $0{,}75 W_{\max}$                               | $0{,}75 W_{\max}$                                     |
-| **Momento da 2ª perda ($1{,}5 W_{\max}$)** | Atinge em $t_5^{\text{Reno}}$                   | Atinge em $t_5^{\text{CUBIC}}$                        |
+| **Momento da 2ª perda ($1{,}5 W_{\max}$) | Atinge em $t_5^{\text{Reno}}$                   | Atinge em $t_5^{\text{CUBIC}}$                        |
 | **Recuo pós-2ª perda**                     | $0{,}75 W_{\max}$                               | $0{,}75 W_{\max}$                                     |
 
 Quando a capacidade da rede aumenta, o TCP CUBIC aproveita a nova largura de banda disponível **muito mais rápido** do que o TCP Reno. Enquanto o Reno sofre para subir lentamente de forma linear, a fase de sondagem convexa do CUBIC dispara para encontrar a nova capacidade.
@@ -340,15 +341,15 @@ o) X representa o RTT de um segmento futuro: antes de acontecer, é aleatório. 
 
 ## Exercício 2
 
-**(a)** X é uma variável aleatória, pois representa o RTT futuro, ainda desconhecido. Já $\mu=EstimatedMeanRTT$, $d=DevRTT$ e $T=\mu+4d$ são tratados como constantes, pois as estimativas já foram calculadas.
+a) X é uma variável aleatória, pois representa o RTT futuro, ainda desconhecido. Já $\mu=EstimatedMeanRTT$, $d=DevRTT$ e $T=\mu+4d$ são tratados como constantes, pois as estimativas já foram calculadas.
 
-**(b)** O evento X>T significa que o RTT do pacote será maior que o timeout configurado.
+b) O evento X>T significa que o RTT do pacote será maior que o timeout configurado.
 
-**(c)** X mede o tempo entre o envio do segmento e o recebimento do ACK. Portanto, X>T indica que o ACK demorou mais do que o TCP esperava antes de considerar uma retransmissão.
+c) X mede o tempo entre o envio do segmento e o recebimento do ACK. Portanto, X>T indica que o ACK demorou mais do que o TCP esperava antes de considerar uma retransmissão.
 
-**(d)** Se T for muito pequeno, RTTs que apenas variam ou ficam temporariamente mais longos podem ultrapassá-lo. O TCP pode então retransmitir um segmento mesmo que ele não tenha sido perdido, causando uma retransmissão desnecessária.
+d) Se T for muito pequeno, RTTs que apenas variam ou ficam temporariamente mais longos podem ultrapassá-lo. O TCP pode então retransmitir um segmento mesmo que ele não tenha sido perdido, causando uma retransmissão desnecessária.
 
-**(e)** Se T for muito grande, o TCP demorará para reagir quando houver uma perda real. Isso atrasa a retransmissão e pode reduzir o desempenho da conexão.
+e) Se T for muito grande, o TCP demorará para reagir quando houver uma perda real. Isso atrasa a retransmissão e pode reduzir o desempenho da conexão.
 
 ## Exercício 3
 
@@ -358,37 +359,37 @@ $$ P(X\geq a)\leq\frac{E[X]}{a}. $$
 
 Como $E[X]=100\text{ ms}$:
 
-**(a)** Para a=200\text{ ms}:
+a) Para a=200\text{ ms}:
 
 $$ P(X\geq 200)\leq\frac{100}{200}=0{,}5. $$
 
-Logo, o limite superior é **0,5 (50%)**.
+Logo, o limite superior é **0,5 (50%).
 
-**(b)** Isso garante que a probabilidade de o RTT ser pelo menos 200 ms não passa de 50%. É um limite, não uma previsão de que a probabilidade seja exatamente 50%.
+b) Isso garante que a probabilidade de o RTT ser pelo menos 200 ms não passa de 50%. É um limite, não uma previsão de que a probabilidade seja exatamente 50%.
 
-**(c)** Para timeout $T=180\text{ ms}$:
+c) Para timeout $T=180\text{ ms}$:
 
 $$ P(X\geq 180)\leq\frac{100}{180}\approx0{,}556. $$
 
 O limite superior é aproximadamente **55,6%**.
 
-**(d)** O limite pode ser grosseiro porque Markov usa apenas a média, não levando em conta a variabilidade  da rede. Ele não considera como os valores de RTT estão distribuídos nem quanto variam, muitas distribuições diferentes com média de 100 ms podem ter probabilidades bem distintas de ultrapassar um limiar.
+d) O limite pode ser grosseiro porque Markov usa apenas a média, não levando em conta a variabilidade  da rede. Ele não considera como os valores de RTT estão distribuídos nem quanto variam, muitas distribuições diferentes com média de 100 ms podem ter probabilidades bem distintas de ultrapassar um limiar.
 
-**(e)** Uma desigualdade que também considera a variabilidade pode dar um limite mais informativo sobre a chance de RTTs distantes da média. Isso ajuda a avaliar melhor a probabilidade de um RTT ultrapassar o timeout.
+e) Uma desigualdade que também considera a variabilidade pode dar um limite mais informativo sobre a chance de RTTs distantes da média. Isso ajuda a avaliar melhor a probabilidade de um RTT ultrapassar o timeout.
 
 ## Exercício 4
 
-**(a)** O quadrado de qualquer número é não negativo, $Z\geq 0$.
+a) O quadrado de qualquer número é não negativo, $Z\geq 0$.
 
-**(b)** Pela desigualdade de Markov, para $a>0$:
+b) Pela desigualdade de Markov, para $a>0$:
 
 $$ P(Z\geq a)\leq\frac{E[Z]}{a}. $$
 
-**(c)** Escolhendo $a=k^2\sigma^2$, obtemos:
+c) Escolhendo $a=k^2\sigma^2$, obtemos:
 
 $$ P\big((X-\mu)^2\geq k^2\sigma^2\big) \leq \frac{E[(X-\mu)^2]}{k^2\sigma^2}. $$
 
-**(d)** Pela definição da variância,
+d) Pela definição da variância,
 
 $$ E[(X-\mu)^2]=\sigma^2. $$
 
@@ -396,20 +397,20 @@ Então:
 
 $$ P\big((X-\mu)^2\geq k^2\sigma^2\big) \leq \frac{\sigma^2}{k^2\sigma^2} =\frac{1}{k^2}. $$
 
-**(e)** Como $k>0$, a condição $(X-\mu)^2\geq k^2\sigma^2$ equivale a $|X-\mu|\geq k\sigma$. Portanto:
+e) Como $k>0$, a condição $(X-\mu)^2\geq k^2\sigma^2$ equivale a $|X-\mu|\geq k\sigma$. Portanto:
 
 (f)
 $$ \boxed{P(|X-\mu|\geq k\sigma)\leq\frac{1}{k^2}}. $$
 
 Essa é a desigualdade de Chebyshev. Ela limita a probabilidade de $X$ ficar a pelo menos $k$ desvios padrão da média.
 
-**(g)** Para $k=4$:
+g) Para $k=4$:
 
 $$ \boxed{P(|X-\mu|\geq4\sigma)\leq\frac{1}{4^2}=\frac{1}{16}=0{,}0625}. $$
 
 Assim, a probabilidade de o RTT se afastar da média por pelo menos quatro desvios padrão é, no máximo, **6,25%**.
 
-**(h)** A associação com o timeout do TCP é uma motivação simplificada para o fator \(4\). Na fórmula real, as estimativas de média e variação são atualizadas ao longo do tempo; além disso, perdas e mudanças nas condições da rede também influenciam o comportamento observado.
+h) A associação com o timeout do TCP é uma motivação simplificada para o fator $4$. Na fórmula real, as estimativas de média e variação são atualizadas ao longo do tempo; além disso, perdas e mudanças nas condições da rede também influenciam o comportamento observado.
 
 ## Exercício 5
 
@@ -428,7 +429,7 @@ c) pela inclusão de eventos podemos tomar ${X ≥ µ + kσ} \subseteq {|X − �
 
   
 
-d) Para \(k=4\):
+d) Para $k=4$:
 $$
 P(X\geq\mu+4\sigma)
 
@@ -440,41 +441,319 @@ e) Pela desigualdade unilateral, a probabilidade de um $RTT$ futuro ultrapassar 
 f) Como $\sigma$ representa a dispersão em relação à média, o TCP adota `DevRTT` como sua medida prática de variabilidade. Multiplicar por **4** garante de forma bastante conservadora que, mesmo no pior cenário estatístico, pelo menos $93{,}75\%$ dos pacotes sem perda chegarão antes do estouro do temporizador, minimizando retransmissões desnecessárias.
 ## Exercício 6
 
-Na fórmula prática do TCP, a estimativa do desvio absoluto é atualizada via EWMA:
+a)O módulo, $|SampleRTT-EstimatedMeanRTT|$, mede a distância entre uma amostra e a estimativa da média. Ele trata desvios positivos e negativos igualmente e mantém a escala original, por exemplo, milissegundos.
+
+O quadrado, $(X-\mu)^2$, também torna os desvios positivos, mas dá peso muito maior aos desvios grandes.
 
   
 
-$$\text{DevRTT} = (1 - \beta) \cdot \text{DevRTT} + \beta \cdot \vert{}\text{SampleRTT} - \text{EstimatedRTT}\vert{} \quad (\beta = 0{,}25)$$
+b) O $DevRTT$ do TCP é atualizado usando desvios absolutos das amostras em relação à estimativa do RTT médio, normalmente por uma média móvel exponencialmente ponderada. O desvio padrão, por sua vez, é calculado usando os desvios ao quadrado em relação à média e depois tirando a raiz quadrada.
 
   
 
-Já a Desigualdade de Chebyshev usa o desvio padrão estatístico $\sigma$, onde $\sigma^2 = \mathbb{E}[(X - \mu)^2]$.
+c) Mesmo sem ser o desvio padrão, $DevRTT$ aumenta quando as amostras de RTT se afastam mais da estimativa da média e diminui quando elas ficam mais próximas. Assim, fornece ao TCP uma medida útil da variação recente, que pode ser incorporada ao timeout
 
   
 
-Vamos resolver o **Exercício 6**:
+d) A desigualdade de Chebyshev justifica a ideia de usar “média mais algumas medidas de dispersão”. No TCP, $DevRTT$ atua como uma medida prática de variabilidade do RTT, mesmo não sendo exatamente o desvio padrão $\sigma$ usado na fórmula de Chebyshev.
 
-  
+## Exercício 7
 
-- **(a)** Qual é a diferença matemática e computacional entre usar **módulo** ($\vert{}X - \mu\vert{}$) e usar **quadrado** ($(X - \mu)^2$) para medir a dispersão de um conjunto de dados? _(Dica: pense no peso dado a desvios muito grandes e no custo de calcular raiz quadrada em processadores de rede)_.
-    
-      
-    
-- **(b)** Por que `DevRTT` **não** é exatamente o mesmo objeto matemático que o desvio padrão $\sigma$?
-    
-      
-    
-- **(c)** Apesar disso, por que `DevRTT` serve como uma excelente aproximação prática da variabilidade do RTT no TCP?
-    
-      
-    
-- **(d)** Complete as duas lacunas da frase do PDF:
-    
-      
-    
-    > _"A desigualdade de Chebyshev justifica a ideia de usar 'média mais algumas medidas de dispersão'. No TCP, DevRTT atua como uma medida prática de **`[LACUNA 1]`** do RTT, mesmo não sendo exatamente o **`[LACUNA 2]`** usado na fórmula de Chebyshev."_
-    > 
-    >   
-    
+a)Suponhamos, por contradição, que
 
-Como você responde a esses quatro pontos do Exercício 6?
+$$ P(X>200)\geq\frac12. $$
+
+b)P(A) = P(X>200), onde cada valor possível de $X$ é maior que $200$ ms (X>200).
+
+c) Como $X\geq0$, os resultados fora do evento $X>200$ não contribuem com valores negativos para a esperança. Dentro desse evento, $X$ é estritamente maior que $200$. Portanto,
+$$\mathbb{E}[X] = \mathbb{E}[X \cdot \mathbb{I}_{\{X > 200\}}] + \mathbb{E}[X \cdot \mathbb{I}_{\{X \le 200\}}] > 200 \cdot \mathbb{P}(X > 200)$$
+$$ E[X]>200\cdot P(X>200). $$
+
+A desigualdade é estrita porque estamos considerando valores de $X$ que são **maiores**, e não apenas iguais, a $200$ ms.
+
+d) Pela suposição do item (a), $P(X>200)\geq\frac12$. Logo,
+
+$$ E[X]>200\cdot P(X>200) \geq200\cdot\frac12 =100\text{ ms}. $$
+
+Assim, concluiríamos que $E[X]>100\text{ ms}$.
+
+e) Isso contradiz a hipótese do exercício, que afirma que $E[X]=100\text{ ms}$.
+
+f) Portanto, a suposição feita por contradição é falsa. Concluímos que
+
+$$ \boxed{P(X>200)<\frac12}. $$
+
+g) No contexto do RTT, se o RTT médio é $100$ ms, a probabilidade de o RTT futuro ultrapassar $200$ ms é **menor que 50%**, supondo que o RTT nunca seja negativo. É apenas um limite superior: não indica que a probabilidade real seja próxima de 50%.
+## Exercício 8
+
+a) MSS é o tamanho máximo do segmento em bytes, multiplicando
+$$
+MSS \times W = \frac{cwnd}{MSS} \times MSS \therefore cwnd = W \cdot MSS
+$$
+Converte o tamanho da janela para W pacotes com MSS bytes.
+
+b) Substituímos $cwnd=W\cdot MSS$ na fórmula da taxa:
+
+$$ TCP\ Rate=\frac{cwnd}{RTT} =\boxed{\frac{W\cdot MSS}{RTT}}\text{ bytes/s}. $$
+
+c) Durante o ciclo, a janela cresce aproximadamente de $W_{\max}/2$ até $W_{\max}$. Aproximamos a média pela média aritmética dos extremos:
+
+$$ \overline{W}\approx \frac{\frac{W_{\max}}{2}+W_{\max}}{2}. $$
+
+d) Simplificando:
+
+$$ \overline{W}\approx \frac{\frac{3W_{\max}}{2}}{2} =\boxed{\frac{3}{4}W_{\max}}. $$
+
+A janela média é, portanto, aproximadamente três quartos da janela máxima.
+
+e) Usamos essa janela média na fórmula da taxa. Como o exercício supõe RTT constante:
+
+$$ TCP\ Rate_{\text{médio}} \approx\frac{\overline{W}\cdot MSS}{RTT} =\frac{\frac{3}{4}W_{\max}\cdot MSS}{RTT}. $$
+
+Logo,
+
+$$ \boxed{TCP\ Rate_{\text{médio}}\approx \frac{3W_{\max}MSS}{4RTT}\text{ bytes/s}}. $$
+
+O resultado é aproximado porque o modelo representa a variação da janela por um crescimento linear entre $W_{\max}/2$ e $W_{\max}$, e calcula a média apenas a partir dos extremos.
+## Exercício 9
+
+a) Em cada RTT, o TCP pode enviar aproximadamente tantos pacotes quanto o tamanho da janela naquele intervalo. Como a janela começa perto de $W_{\max}/2$ e aumenta gradualmente até $W_{\max}$, somamos os tamanhos das janelas de cada RTT.
+
+A soma inclui o termo correspondente a $W_{\max}$, associado ao final do ciclo e à perda que encerra esse ciclo. Assim, ela aproxima o total de pacotes enviados entre duas perdas, incluindo o pacote perdido.
+
+b) Podemos representar essa soma por
+
+$$ Q\approx \sum_{w=W_{\max}/2}^{W_{\max}} w = \frac{W_{\max}}2+ \left(\frac{W_{\max}}2+1\right)+ \left(\frac{W_{\max}}2+2\right)+\cdots+W_{\max}. $$
+
+Cada termo $w$ representa a janela, em pacotes, durante um RTT.
+
+c) Uma soma de valores ao longo do ciclo pode ser aproximada pelo valor médio desses valores multiplicado pela quantidade de intervalos:
+
+$$ Q\approx \text{janela média}\times \text{número de RTTs no ciclo}. $$
+
+Essa é uma aproximação porque considera a janela crescendo de maneira gradual.
+
+d) Pelo exercício anterior, a janela média é aproximadamente
+
+$$ \overline W\approx\frac34W_{\max}. $$
+
+A janela aumenta de $W_{\max}/2$ até $W_{\max}$, uma diferença de $W_{\max}/2$ pacotes. Como aumenta cerca de um pacote por RTT, o ciclo dura aproximadamente $W_{\max}/2$ RTTs. Portanto,
+
+$$ Q\approx \frac34W_{\max}\cdot\frac{W_{\max}}2. $$
+
+Isso é o mesmo que somar os valores da janela em cada RTT e manter apenas o termo de maior ordem, proporcional a $W_{\max}^2$. Por exemplo, se $W_{\max}$ for par, a soma inteira resulta em
+
+$$ Q= \frac38W_{\max}^2+\frac34W_{\max}. $$
+
+Para janelas grandes, o termo linear $\frac34W_{\max}$ é pequeno comparado ao termo quadrático, então pode ser desprezado.
+
+e) Simplificando o produto:
+
+$$ \boxed{Q\approx\frac38W_{\max}^2}. $$
+
+Assim, o número aproximado de pacotes enviados em um ciclo cresce com o quadrado da janela máxima.
+## Exercício 10
+a) Substituímos a expressão de $Q$:
+
+$$ p\approx\frac{1}{\frac{3W_{\max}^2}{8}}. $$
+
+b) Dividir por uma fração equivale a multiplicar pelo seu inverso:
+
+$$ p\approx\frac{8}{3W_{\max}^2}. $$
+
+c) Para isolar $W_{\max}$, multiplicamos por $3W_{\max}^2$ e dividimos por $3p$:
+
+$$ 3pW_{\max}^2\approx8 \quad\Longrightarrow\quad W_{\max}^2\approx\frac{8}{3p}. $$
+
+d) Como a janela é positiva, tomamos a raiz positiva:
+
+$$ \boxed{W_{\max}\approx\sqrt{\frac{8}{3p}}}. $$
+
+e) Essa relação é chamada de _square-root law_ porque $W_{\max}$ é proporcional à raiz quadrada do inverso da probabilidade de perda:
+
+$$ W_{\max}\propto\frac{1}{\sqrt p}. $$
+
+f) Se $p$ aumenta, $\sqrt{8/(3p)}$ diminui. Portanto, o modelo prevê que a janela máxima também diminui: com mais perdas, o TCP tende a reduzir o quanto envia antes de detectar uma perda.
+Esse resultado depende das aproximações do modelo, como uma perda média por ciclo e crescimento de um pacote por RTT.
+## Exercício 11
+
+a) e b)
+
+$$ TCP\ Rate\approx \frac{3}{4}W_{max}\frac{MSS}{RTT}\approx\frac{3MSS}{4RTT}\sqrt{\frac{8}{3p}}. $$
+
+c) 
+
+$$ \frac34\sqrt{\frac83} = \sqrt{\frac{9}{16}\cdot\frac83} = \sqrt{\frac{72}{48}} = \sqrt{\frac{9}{6}}= \sqrt{\frac32}. $$
+
+Assim,
+
+$$ TCP\ Rate\approx \frac{MSS}{RTT}\sqrt{\frac{3}{2p}}. $$
+
+d) Mantendo $MSS$ e $RTT$ fixos, a taxa é inversamente proporcional a $\sqrt p$, pois $\sqrt{\frac{3}{2}}\frac{1}{\sqrt p}=\sqrt{\frac{3}{2p}}$, podemos escrever:
+
+$$ TCP\ Rate\propto\frac{1}{\sqrt p}. $$
+
+Se a probabilidade de perda aumenta, a janela média estimada diminui, reduzindo também a taxa.
+
+e) Se $p$ quadruplica, passa a ser $4p$. A taxa fica proporcional a
+
+$$ \frac{1}{\sqrt{4p}} =\frac{1}{2\sqrt p}. $$
+
+Logo, a taxa aproximada cai por um fator de **2** (pela metade).
+
+## Exercício 12
+
+
+$$ p=0{,}01,\qquad RTT=100\text{ ms},\qquad MSS=1500\text{ bytes}. $$
+
+Como a fórmula da taxa usa o RTT em segundos, convertemos:
+
+$$ 100\text{ ms}=0{,}1\text{ s}. $$
+
+a) 
+Pela fórmula:
+
+$$ W_{\max}\approx\sqrt{\frac{8}{3p}} =\sqrt{\frac{8}{3(0{,}01)}} =\sqrt{\frac{8}{0{,}03}} =\sqrt{266{,}67} \approx\boxed{16{,}33\text{ pacotes}}. $$
+
+b) 
+A janela média é aproximadamente três quartos da máxima:
+
+$$ \overline W\approx\frac34W_{\max} =\frac34(16{,}33) \approx\boxed{12{,}25\text{ pacotes}}. $$
+
+c) 
+
+Usamos a janela média em bytes, dividida pelo RTT em segundos:
+
+$$ TCP\ Rate\approx\frac{\overline W\cdot MSS}{RTT} =\frac{12{,}25\cdot1500}{0{,}1} \approx\boxed{183\,750\text{ bytes/s}}. $$
+
+d) 
+
+Cada byte tem 8 bits:
+
+$$ 183\,750\text{ bytes/s}\cdot8 =\boxed{1\,470\,000\text{ bits/s}} \approx\boxed{1{,}47\text{ Mbit/s}}. $$
+
+e) Mesmo que o enlace físico tivesse uma largura de banda de $1\text{ Gbps}$, uma taxa de perda de pacotes de apenas $1\%$ aliada a um RTT de $100\text{ ms}$ limita a vazão efetiva dessa única conexão TCP a apenas **$\approx 1{,}47\text{ Mbps}$**. Isso ilustra como o TCP Reno é extremamente sensível a perdas e latência
+## Exercício 13
+
+a) Como $W=cwnd/MSS$, tomando o inverso:
+
+$$ \boxed{\frac{1}{W}=\frac{1}{cwnd/MSS}}. $$
+
+b) Em cada ACK, a janela aumenta aproximadamente $1/W$ de pacote. Como cada pacote corresponde a $MSS$ bytes, o aumento em bytes é
+
+$$ \frac{1}{W}\cdot MSS =\boxed{\frac{MSS}{W}}. $$
+
+c) Substituímos $W=cwnd/MSS$:
+
+$$ \frac{MSS}{W} =\frac{MSS}{cwnd/MSS} =MSS\cdot\frac{MSS}{cwnd} =\boxed{\frac{MSS^2}{cwnd}}. $$
+
+d) Portanto, a cada ACK, o aumento aproximado da janela em bytes é
+
+$$ \boxed{\Delta cwnd\approx\frac{MSS^2}{cwnd}}. $$
+
+e) Quando $cwnd$ cresce, o denominador de $\frac{MSS^2}{cwnd}$ também cresce. Assim, cada ACK acrescenta menos bytes à janela. Isso reduz o tamanho do aumento individual, ajudando a manter o crescimento gradual quando a janela já está grande.
+
+Aproximadamente $W$ ACKs são recebidos por RTT. Como cada ACK aumenta a janela em $MSS/W$ bytes, o aumento total em um RTT é cerca de
+
+$$ W\cdot\frac{MSS}{W}=MSS. $$
+
+Isso corresponde à ideia de crescimento aditivo: cerca de um MSS por RTT.
+## Exercício 14
+
+$$ MSS=1500\text{ bytes},\qquad cwnd=12000\text{ bytes}. $$
+
+a)
+
+A janela em pacotes é:
+
+$$ W=\frac{cwnd}{MSS} =\frac{12000}{1500} =\boxed{8\text{ pacotes}}. $$
+
+b) 
+
+Usamos a fórmula do exercício anterior:
+
+$$ \Delta cwnd\approx\frac{MSS^2}{cwnd} =\frac{1500^2}{12000} =\frac{2\,250\,000}{12\,000} =\boxed{187{,}5\text{ bytes por ACK}}. $$
+
+c)
+
+Dividimos o aumento desejado, $1500$ bytes, pelo aumento por ACK:
+
+$$ \frac{1500}{187{,}5}=\boxed{8\text{ ACKs}}. $$
+
+d)
+
+A janela é de 8 pacotes, então, aproximadamente, 8 ACKs chegam durante um RTT. Cada ACK aumenta a janela em cerca de 187,5 bytes:
+
+$$ 8\cdot187{,}5=1500\text{ bytes}=1\ MSS. $$
+
+Assim, a janela cresce aproximadamente um MSS por RTT. Esse crescimento gradual é chamado de aumento aditivo.
+## Exercício 15
+
+a)
+A cada ACK, o aumento aproximado é $1/W$ de pacote, onde $W$ é a janela atual em pacotes. Durante um RTT, chegam aproximadamente $W$ ACKs. Portanto, o aumento total ao longo desse RTT é:
+
+$$ W\cdot\frac{1}{W}=1\text{ pacote}. $$
+
+b)
+Como a janela aumenta cerca de um pacote por RTT, ela percorre gradualmente os valores entre o início e o final do ciclo. Assim, os tamanhos aproximados das janelas são:
+
+$$ \frac{W_{\max}}2,\quad \frac{W_{\max}}2+1,\quad \frac{W_{\max}}2+2,\quad \ldots,\quad W_{\max}. $$
+
+c)
+Neste modelo simplificado, a janela cresce até chegar perto de $W_{\max}$, quando ocorre uma perda. Essa perda marca o fim do ciclo de crescimento e leva o TCP a reduzir a janela.
+
+d)
+O modelo considera que, ao detectar congestionamento por uma perda, o TCP aplica uma redução multiplicativa: a janela cai de $W_{\max}$ para aproximadamente $W_{\max}/2$. A partir daí, começa outro ciclo de crescimento.
+
+e)
+Em cada RTT, o TCP envia aproximadamente a quantidade de pacotes indicada pela janela daquele momento. Somamos, então, os tamanhos das janelas percorridas no ciclo:
+
+$$ Q\approx \frac{W_{\max}}2+ \left(\frac{W_{\max}}2+1\right)+ \left(\frac{W_{\max}}2+2\right)+ \cdots+W_{\max}. $$
+
+Essa soma aproxima o total de pacotes enviados entre duas perdas, incluindo o pacote associado à perda que encerra o ciclo.
+
+f)
+A janela média do ciclo é aproximadamente $3W_{\max}/4$, e o ciclo dura cerca de $W_{\max}/2$ RTTs. Logo, o total de pacotes enviados por ciclo é aproximadamente:
+
+$$ Q\approx\frac{3W_{\max}}4\cdot\frac{W_{\max}}2 =\frac38W_{\max}^2. $$
+
+Supondo uma perda média por ciclo, a probabilidade de perda por pacote é aproximadamente:
+
+$$ p\approx\frac1Q \approx\frac{8}{3W_{\max}^2}. $$
+
+Isolando $W_{\max}$:
+
+$$ W_{\max}\approx\sqrt{\frac{8}{3p}}. $$
+
+A taxa média é aproximadamente a janela média multiplicada pelo MSS e dividida pelo RTT:
+
+$$ TCP\ Rate\approx\frac{3W_{\max}MSS}{4RTT}. $$
+
+Substituindo a expressão de $W_{\max}$:
+
+$$ TCP\ Rate \approx \frac{MSS}{RTT}\sqrt{\frac{3}{2p}}. $$
+
+Mantendo o MSS fixo, a taxa é proporcional a
+
+$$ \boxed{TCP\ Rate\propto\frac{1}{RTT\sqrt p}}. $$
+
+Portanto, neste modelo, aumentar o RTT ou a probabilidade de perda reduz a taxa média estimada do TCP.
+## Exercício 16
+
+a) Para pode levar em consideração alterações na redes a cerca de pacotes mais recentes e garantir que o timeout só dispare quando o atraso de algum pacote desviar. Em caso de T muito grande a conexão pode ficar ociosa e demorar para retransmitir perdendo desempenho, no caso oposto, T muito pequeno, gera retransmissões desnecessárias de pacotes que pode ainda estar em trajeto.
+
+b) Chebyshev limita a probabilidade de $X$ ficar a pelo menos $k$ desvios padrão da média. Assim, a probabilidade de o RTT se afastar da média por pelo menos quatro desvios padrão é, no máximo, **6,25%**.
+
+c) porque $W_{\max}$ é proporcional à raiz quadrada do inverso da probabilidade de perda:
+
+$$ W_{\max}\propto\frac{1}{\sqrt p}. $$
+d) De acordo com $$ TCP\ Rate_{\text{médio}}\approx \frac{3W_{\max}MSS}{4RTT}\text{ bytes/s}. $$
+Substituindo a expressão de $W_{\max}$ e mantendo o MSS fixo, a taxa é proporcional a
+
+$$ TCP\ Rate\propto\frac{1}{RTT\sqrt p}. $$
+Portanto, neste modelo, aumentar o RTT ou a probabilidade de perda reduz a taxa média estimada do TCP.
+
+e) A fórmula do timeout, usa uma estimativa do RTT médio e acrescenta uma margem baseada na variação observada. Isso ajuda a escolher um tempo de espera que acompanhe as condições da conexão.
+A aproximação da taxa, relaciona o desempenho à perda e ao RTT: mais perdas ou um RTT maior tendem a reduzir a taxa.
+
+As duas expressões mostram que o TCP adapta seu comportamento usando informações estimadas da rede. No timeout, importam o RTT médio e sua variabilidade; na taxa média, importam o RTT, as perdas e o tamanho dos segmentos. A relação da taxa é aproximada e depende das hipóteses simplificadoras usadas para modelar o ciclo de congestionamento.
