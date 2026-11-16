@@ -59,5 +59,31 @@ b) Não funciona. Com identificadores aleatórios não há correlação entre pa
 - **Conexão invertida Bernard → Arnold:** impossível, pelo mesmo motivo (Arnold também está atrás de NAT).
 - **Solução:** usar um peer público (Cláudio) como **relay**. Ambos iniciam conexões para ele, e ele repassa os dados.
 #### P21
+Ingress Port = 1 ; IP Src = 10.3.*\.\* ; IP Dst = 10.2.\*.\* → Forward(2)
+Ingress Port = 2 ; IP Src = 10.1.\*.\* ; IP Dst = 10.3.\*.\* → Forward(1)
+Ingress Port = {1,2} ; IP Src = \*. ; IP Dst = 10.2.0.3 → Forward(3)
+Ingress Port = {1,2} ; IP Src = \*. ; IP Dst = 10.2.0.4 → Forward(4)
+Ingress Port = 3 ; IP Src = 10.2.0.3 ; IP Dst = 10.2.0.4 → Forward(4)  
+Ingress Port = 4 ; IP Src = 10.2.0.4 ; IP Dst = 10.2.0.3 → Forward(3)
 #### P22
+Ingress Port = 3 ; IP Src = 10.2.0.3 ; IP Dst = {10.3.*\.\*, 10.1.*\.\*} → Forward(2)  
+Ingress Port = 4 ; IP Src = 10.2.0.4 ; IP Dst = {10.3.*\.\*, 10.1.*\.\*} → Forward(1)
 #### P23
+
+- S1
+IP Src = 10.2.\*.\* ; IP Dst = 10.1.0.1 → Forward(2)  
+IP Src = 10.2.\*.\*; IP Dst = 10.1.0.2 → Forward(3)
+IP Src = 10.2.\*.\*; IP Dst = 10.3.\*.\* → Forward(1)
+
+- S3
+IP Src = 10.2.\*.\* ; IP Dst = 10.1.\*.\* → Forward(3)  
+IP Src = 10.2.\*.\*; IP IP Dst = 10.3.0.6 → Forward(1)
+IP Src = 10.2.\*.\*; IP Dst = 10.3.0.5 → Forward(2)
+
+## Capítulo 5
+#### P3
+#### P5
+#### P10
+#### P11
+#### Exercício 1
+#### Exercício 2
