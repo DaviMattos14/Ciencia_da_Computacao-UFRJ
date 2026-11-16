@@ -55,3 +55,9 @@ Ela funciona porque cada host tem **seu próprio contador**, e o NAT não altera
 b) Não funciona. Com identificadores aleatórios não há correlação entre pacotes consecutivos do mesmo host, então não há como agrupar os pacotes por origem e contar os hosts.
 
 #### P20
+- **Conexão direta Arnold → Bernard:** impossível, porque o NAT de Bernard descarta o SYN sem entrada na tabela.
+- **Conexão invertida Bernard → Arnold:** impossível, pelo mesmo motivo (Arnold também está atrás de NAT).
+- **Solução:** usar um peer público (Cláudio) como **relay**. Ambos iniciam conexões para ele, e ele repassa os dados.
+#### P21
+#### P22
+#### P23
