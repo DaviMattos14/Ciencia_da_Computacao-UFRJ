@@ -102,6 +102,70 @@ IP Src = 10.2.\*.\*; IP Dst = 10.3.0.5 → Forward(2)
 | 2      | 6 v      | 5 x | 2 z | 5 x      | 0   |
 
 #### P10
+
+Base da Indução ($t = 0 \to t = 1$):
+
+- No instante inicial ($t = 0$), cada nó conhece apenas os custos diretos para seus vizinhos imediatos $v \in N(x)$, definindo:
+    $$D_x^{(0)}(y) = \begin{cases} 0, & \text{se } y = x \\ c(x, y), & \text{se } y \in N(x) \\ \infty, & \text{caso contrário} \end{cases}$$
+    
+- Na iteração $t = 1$, após receber os vetores de distâncias iniciais de seus vizinhos, o nó $x$ atualiza seu vetor pela equação de Bellman-Ford:
+    $$D_x^{(1)}(y) = \min_{v \in N(x)} \left\{ c(x, v) + D_v^{(0)}(y) \right\}$$
+    
+- Como cada vizinho $v$ possui $D_v^{(0)}(v) = 0$, o termo correspondente ao próprio destino $y$ (quando $y \in N(x)$) na operação de mínimo é $c(x, y) + D_y^{(0)}(y) = c(x, y) + 0 = c(x, y) = D_x^{(0)}(y)$
+- Portanto, o mínimo tomado sobre todos os vizinhos nunca pode exceder o valor inicial (e para $y \notin N(x)$, qualquer valor finito é estritamente menor que $\infty$):
+    $$D_x^{(1)}(y) \le D_x^{(0)}(y) \quad \forall x, y$$
+
+Passo Indutivo ($t \to t + 1$):
+
+- **Hipótese de Indução:** Suponha que, até a iteração $t$, nenhuma estimativa de distância em nenhum nó da rede tenha aumentado, isto é:
+    
+      
+    
+    $$D_v^{(t)}(y) \le D_v^{(t-1)}(y) \quad \forall v, y$$
+    
+- Na iteração $t + 1$, o nó $x$ recalcula sua distância até $y$:
+    
+      
+    
+    $$D_x^{(t+1)}(y) = \min_{v \in N(x)} \left\{ c(x, v) + D_v^{(t)}(y) \right\}$$
+    
+- Como os custos de enlace $c(x, v)$ são constantes e, pela hipótese de indução, $D_v^{(t)}(y) \le D_v^{(t-1)}(y)$ para todo vizinho $v$, cada termo da soma satisfaz:
+    
+      
+    
+    $$c(x, v) + D_v^{(t)}(y) \le c(x, v) + D_v^{(t-1)}(y)$$
+    
+- Logo, o mínimo sobre todos os vizinhos também satisfaz:
+    
+      
+    
+    $$\min_{v \in N(x)} \left\{ c(x, v) + D_v^{(t)}(y) \right\} \le \min_{v \in N(x)} \left\{ c(x, v) + D_v^{(t-1)}(y) \right\}$$
+    
+    $$D_x^{(t+1)}(y) \le D_x^{(t)}(y)$$
+    
+
+
+Estabilização em um Número Finito de Etapas
+
+Para concluir que o algoritmo converge e para em um número finito de passos:
+
+1. **Limitante Inferior (Cota Mínima):**
+     - Todos os custos de enlace $c(u, v)$ na rede são estritamente positivos ($c(u, v) > 0$).
+
+    - Qualquer caminho simples entre dois nós distintos $x$ e $y$ em um grafo finito com $N$ nós possui no máximo $N - 1$ enlaces e um custo estritamente positivo. Assim, cada entrada $D_x^{(t)}(y)$ é limitada inferiormente pelo custo real do caminho mínimo $d^*(x, y) > 0$ (e certamente por $0$).
+
+2. **Discretude / Conjunto Finito de Caminhos Possíveis:**
+
+    - Como a rede possui um número finito $N$ de nós, existe apenas um **número finito de caminhos sem laços** possíveis entre $x$ e $y$ (e, consequentemente, um conjunto finito de valores de custo possíveis que $D_x^{(t)}(y)$ pode assumir).
+
+    - Além disso, na versão síncrona, a cada iteração $t$ em que ocorre alguma mudança na rede, o algoritmo incorpora caminhos com pelo menos $t$ saltos. Como nenhum caminho de custo mínimo em um grafo com custos positivos possui laços, ele tem no máximo $N - 1$ enlaces.
+
+3. **Conclusão:**
+
+    - Uma sequência monotonicamente não crescente ($D_x^{(0)}(y) \ge D_x^{(1)}(y) \ge D_x^{(2)}(y) \ge \dots$) que assume valores dentro de um conjunto finito de custos e é limitada inferiormente por $d^*(x, y) > 0$ **não pode decrescer indefinidamente**.
+
+    - Portanto, após um número finito de etapas (no máximo $N - 1$ iterações após o início), nenhum vetor de distâncias sofre mais alterações, o envio de mensagens cessa e o algoritmo atinge um estado estacionário estável.
+
 #### P11
 #### Exercício 1
 #### Exercício 2
