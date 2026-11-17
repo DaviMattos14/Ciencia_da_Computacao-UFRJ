@@ -82,7 +82,6 @@ IP Src = 10.2.\*.\*; IP Dst = 10.3.0.5 → Forward(2)
 
 ## Capítulo 5
 #### P3
-#### **2. Tabela de Execução do Algoritmo de Dijkstra (Origem: $x$)**
 
 | **Passo** | **N′**      | **D(t),p(t)** | **D(u),p(u)** | **D(v),p(v)** | **D(w),p(w)** | **D(y),p(y)** | **D(z),p(z)** |
 | --------- | ----------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -94,8 +93,14 @@ IP Src = 10.2.\*.\*; IP Dst = 10.3.0.5 → Forward(2)
 | **5**     | {$xvuwyt$}  | —             | —             | —             | —             | —             | **$8, x$**    |
 | **6**     | {$xvuwytz$} | —             | —             | —             | —             | —             | —             |
 
-(Nota: Nos passos 1, 2 e 3, houve empate de custo mínimo igual a $6$ entre os nós $u$, $w$ e $y$, sendo
 #### P5
+
+| Rodada | u        | v   | x   | y        | z   |
+| ------ | -------- | --- | --- | -------- | --- |
+| 0      | $\infty$ | 6 z | 2 z | $\infty$ | 0   |
+| 1      | 7 v      | 5 x | 2 z | 5 x      | 0   |
+| 2      | 6 v      | 5 x | 2 z | 5 x      | 0   |
+
 #### P10
 #### P11
 #### Exercício 1
